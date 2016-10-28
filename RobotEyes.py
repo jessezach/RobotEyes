@@ -40,12 +40,12 @@ class RobotEyes(object):
             raise ValueError('Mode should be test or baseline')
 
     def capture_full_screen(self):
-        test_name = self.test_name.replace(" ", "_")
+        test_name = self.test_name.replace(' ', '_')
 
-        if self.mode.lower() == "baseline":
+        if self.mode.lower() == 'baseline':
             path = self.root_path + '/baseline/' + test_name
 
-        elif self.mode.lower() == "test":
+        elif self.mode.lower() == 'test':
             path = self.root_path + '/actual/' + test_name
 
         if not os.path.exists(path):
@@ -56,12 +56,12 @@ class RobotEyes(object):
         self.count += 1
 
     def capture_element(self, selector, value, left=0, top=0,right=0, bottom=0):
-        test_name = self.test_name.replace(" ", "_")
+        test_name = self.test_name.replace(' ', '_')
 
-        if self.mode.lower() == "baseline":
+        if self.mode.lower() == 'baseline':
             path = self.root_path + '/baseline/' + test_name
 
-        elif self.mode.lower() == "test":
+        elif self.mode.lower() == 'test':
             path = self.root_path + '/actual/' + test_name
 
         if selector.upper() == 'XPATH':
@@ -98,14 +98,14 @@ class RobotEyes(object):
 
     def compare_images(self):
         if self.env.lower() == 'local' and self.mode.lower() == 'test':
-            test_name = self.test_name.replace(" ", "_")
+            test_name = self.test_name.replace(' ', '_')
             baseline_path = self.root_path + '/baseline/' + test_name
             actual_path = self.root_path + '/actual/' + test_name
             diff_path = self.root_path + '/diff/' + test_name
 
             # compare actual and baseline images and save the diff image
             for filename in os.listdir(actual_path):
-                if filename.endswith(".png"):
+                if filename.endswith('.png'):
                     a_path = ''
                     b_path = ''
                     d_path = ''
@@ -113,8 +113,8 @@ class RobotEyes(object):
                     if not os.path.exists(diff_path):
                         os.makedirs(diff_path)
 
-                    b_path = baseline_path + "/" + filename
-                    a_path = actual_path + "/" + filename
+                    b_path = baseline_path + '/' + filename
+                    a_path = actual_path + '/' + filename
 
                     d_path = diff_path + '/' + filename
 
@@ -122,6 +122,6 @@ class RobotEyes(object):
                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
                     difference = err.split()[1][1:-1]
-                    output = open(actual_path + '/' + filename + '.txt', "a+")
+                    output = open(actual_path + '/' + filename + '.txt', 'a+')
                     output.write(difference)
                     output.close()
