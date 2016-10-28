@@ -6,7 +6,7 @@ visual test report.
 
 - Place the files in the "Lib" folder of your Robot project.
 - Import the Library into your Robot test. Pass ENV("local") Mode("test" or "baseline") as arguments.
-- Call open eyes method to after opening the browser in your selenium test.
+- Call open eyes method after opening the browser in your selenium test.
 - Use the capture full screen, capture element keywords to capture images.
 - Call the compare images keyword at the end of the test to compare all the images captured in the respective test.
 - Once done running the tests, execute the report generator script and pass the path to output.xml as argument from commandline.
