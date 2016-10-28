@@ -37,7 +37,7 @@ class RobotEyes(object):
                 shutil.rmtree(self.root_path + '/baseline/' + self.test_name)
 
         else:
-            raise ValueError('Browser/App is not open')
+            raise ValueError('Mode should be test or baseline')
 
     def capture_full_screen(self):
         test_name = self.test_name.replace(" ", "_")
