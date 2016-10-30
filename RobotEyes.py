@@ -9,7 +9,6 @@ class RobotEyes(object):
     def __init__(self, env, mode):
         self.env = env
         self.mode = mode
-        self.count = 1
         self.root_path = os.path.dirname(os.path.abspath(__file__))
 
     def open_eyes(self):
@@ -24,27 +23,25 @@ class RobotEyes(object):
                 raise ValueError('Browser/App is not open')
 
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
+        self.count = 1
 
-        if self.mode == 'test':
+        if self.mode.lower() == 'test':
             if os.path.exists(self.root_path + '/actual/' + self.test_name):
                 shutil.rmtree(self.root_path + '/actual/' + self.test_name)
 
             if os.path.exists(self.root_path + '/diff/' + self.test_name):
                 shutil.rmtree(self.root_path + '/diff/' + self.test_name)
-
-        elif self.mode == 'baseline':
+        elif self.mode.lower() == 'baseline':
             if os.path.exists(self.root_path + '/baseline/' + self.test_name):
                 shutil.rmtree(self.root_path + '/baseline/' + self.test_name)
-
         else:
-            raise ValueError('Mode should be test or baseline')
+            raise ValueError('Browser/App is not open')
 
     def capture_full_screen(self):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
             path = self.root_path + '/baseline/' + test_name
-
         elif self.mode.lower() == 'test':
             path = self.root_path + '/actual/' + test_name
 
@@ -55,23 +52,32 @@ class RobotEyes(object):
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
-    def capture_element(self, selector, value, left=0, top=0,right=0, bottom=0):
+    def capture_element(self, selector, left=0, top=0,right=0, bottom=0):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
             path = self.root_path + '/baseline/' + test_name
-
         elif self.mode.lower() == 'test':
             path = self.root_path + '/actual/' + test_name
 
-        if selector.upper() == 'XPATH':
-            search_element = self.driver.find_element_by_xpath(value)
-        elif selector.upper() == 'ID':
-            search_element = self.driver.find_element_by_id(value)
-        elif selector.upper() == 'CLASS NAME':
-            search_element = self.driver.find_element_by_class_name(value)
-        elif selector.upper() == 'CSS SELECTOR':
-            search_element = self.driver.find_element_by_css_selector(value)
+        if selector.startswith('//'):
+            prefix = 'xpath'
+            locator = selector
+        else:
+            selector_parts = selector.partition('=')
+            prefix = selector_parts[0].strip()
+            locator = selector_parts[2].strip()
+            if not locator:
+                raise ValueError('Please prefix locator type.')
+
+        if prefix.lower() == 'xpath':
+            search_element = self.driver.find_element_by_xpath(locator)
+        elif prefix.lower() == 'id':
+            search_element = self.driver.find_element_by_id(locator)
+        elif prefix.lower() == 'class':
+            search_element = self.driver.find_element_by_class_name(locator)
+        elif prefix.lower() == 'css':
+            search_element = self.driver.find_element_by_css_selector(locator)
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -81,9 +87,7 @@ class RobotEyes(object):
         location = search_element.location
         size = search_element.size
 
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
         im = Image.open(path + '/img' + str(self.count) + '.png')
-
         l = int(location['x'])
         t = int(location['y'])
         r = int(location['x'] + size['width'])
@@ -115,7 +119,6 @@ class RobotEyes(object):
 
                     b_path = baseline_path + '/' + filename
                     a_path = actual_path + '/' + filename
-
                     d_path = diff_path + '/' + filename
 
                     proc = subprocess.Popen('compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' % (a_path, b_path, d_path),

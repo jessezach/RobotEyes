@@ -7,7 +7,11 @@ path = os.path.dirname(os.path.abspath(__file__))
 index = path.rfind('/')
 lib_folder = path[index + 1:]
 report_folder = path[:index]
-report_path = sys.argv[1:][0]
+
+try:
+    report_path = sys.argv[1:][0]
+except IndexError:
+    raise IndexError('Please provide the path to xml report')
 
 if not os.path.exists(path + '/actual/'):
     raise ValueError('Results directory does not exist')
@@ -68,7 +72,7 @@ if '/' in report_path:
         <tbody>''' % (folder_name, test_name, folder_name)
 
         for filename in os.listdir(path + '/actual/' + folder_name):
-            if filename.endswith(".png"):
+            if filename.endswith('.png'):
                 actual_img_path = lib_folder + '/actual/' + folder_name + '/' + filename
                 baseline_img_path = lib_folder + '/baseline/' + folder_name + '/' + filename
                 diff_img_path = lib_folder + '/diff/' + folder_name + '/' + filename
@@ -79,7 +83,7 @@ if '/' in report_path:
                 <td><img src="%s" height="200" width="350"></td>
                 ''' % (baseline_img_path, actual_img_path, diff_img_path)
 
-            elif filename.endswith(".txt"):
+            elif filename.endswith('.txt'):
                 infile = open(path + '/actual/' + folder_name + '/' + filename, 'r')
                 first_line = infile.readline().strip()
                 infile.close()
@@ -102,6 +106,9 @@ if '/' in report_path:
     </html>'''
 
     print 'Creating report at %s/visualReport.html' % report_folder
-    output = open(report_folder + '/visualReport.html',"w")
+    output = open(report_folder + '/visualReport.html', 'w')
     output.write(html)
     output.close()
+
+else:
+    raise ValueError('Provide a valid path to the xml report')
