@@ -121,7 +121,10 @@ class RobotEyes(object):
                     a_path = actual_path + '/' + filename
                     d_path = diff_path + '/' + filename
 
-                    proc = subprocess.Popen('compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' % (a_path, b_path, d_path),
+                    compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                                  % (a_path, b_path, d_path)
+
+                    proc = subprocess.Popen(compare_cmd,
                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
                     difference = err.split()[1][1:-1]
