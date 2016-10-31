@@ -123,6 +123,6 @@ class RobotEyes(object):
                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
                     difference = err.split()[1][1:-1]
-                    output = open(actual_path + '/' + filename + '.txt', 'a+')
+                    output = open(actual_path + '/' + filename + '.txt', 'w')
                     output.write(difference)
                     output.close()
