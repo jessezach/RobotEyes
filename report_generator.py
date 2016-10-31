@@ -46,69 +46,65 @@ html = '''
 <tbody>
 '''
 
-if '/' in report_path:
-    tree = ET.parse(report_path)
-    for t in tree.findall('.//test'):
-        test_name = t.get('name')
-        folder_name = test_name.replace(' ', '_')
+tree = ET.parse(report_path)
+for t in tree.findall('.//test'):
+    test_name = t.get('name')
+    folder_name = test_name.replace(' ', '_')
 
-        html += '''<tr data-toggle="collapse" data-target='div[value="%s"]' class="accordion-toggle">
-        <td>
-        <button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span></button>
-        </td>
-        <td>%s</td
-        </tr>
-        <tr>
-        <td colspan="12" class="hiddenRow"><div class="accordian-body collapse" value="%s">
-        <table class="table table-bordered table-hover">
-        <thead>
-        <tr>
-        <th>Baseline</th>
-        <th>Actual</th>
-        <th>Diff</th>
-        <th>Diff value</th>
-        </tr>
-        </thead>
-        <tbody>''' % (folder_name, test_name, folder_name)
+    html += '''<tr data-toggle="collapse" data-target='div[value="%s"]' class="accordion-toggle">
+    <td>
+    <button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span></button>
+    </td>
+    <td>%s</td
+    </tr>
+    <tr>
+    <td colspan="12" class="hiddenRow"><div class="accordian-body collapse" value="%s">
+    <table class="table table-bordered table-hover">
+    <thead>
+    <tr>
+    <th>Baseline</th>
+    <th>Actual</th>
+    <th>Diff</th>
+    <th>Diff value</th>
+    </tr>
+    </thead>
+    <tbody>''' % (folder_name, test_name, folder_name)
 
-        for filename in os.listdir(path + '/actual/' + folder_name):
-            if filename.endswith('.png'):
-                actual_img_path = lib_folder + '/actual/' + folder_name + '/' + filename
-                baseline_img_path = lib_folder + '/baseline/' + folder_name + '/' + filename
-                diff_img_path = lib_folder + '/diff/' + folder_name + '/' + filename
-                html += '''
-                <tr>
-                <td><img src="%s" height="200" width="350"></td>
-                <td><img src="%s" height="200" width="350"></td>
-                <td><img src="%s" height="200" width="350"></td>
-                ''' % (baseline_img_path, actual_img_path, diff_img_path)
+    for filename in os.listdir(path + '/actual/' + folder_name):
+        if filename.endswith('.png'):
+            actual_img_path = lib_folder + '/actual/' + folder_name + '/' + filename
+            baseline_img_path = lib_folder + '/baseline/' + folder_name + '/' + filename
+            diff_img_path = lib_folder + '/diff/' + folder_name + '/' + filename
+            html += '''
+            <tr>
+            <td><img src="%s" height="200" width="350"></td>
+            <td><img src="%s" height="200" width="350"></td>
+            <td><img src="%s" height="200" width="350"></td>
+            ''' % (baseline_img_path, actual_img_path, diff_img_path)
 
-            elif filename.endswith('.txt'):
-                infile = open(path + '/actual/' + folder_name + '/' + filename, 'r')
-                first_line = infile.readline().strip()
-                infile.close()
-                os.remove(path + '/actual/' + folder_name + '/' + filename)
-                html += '''
-                <td>%s</td></tr>''' % first_line
-
-        html += '''
-        </tbody>
-        </table>
-        </div>
-        </td>
-        </tr>'''
+        elif filename.endswith('.txt'):
+            infile = open(path + '/actual/' + folder_name + '/' + filename, 'r')
+            first_line = infile.readline().strip()
+            infile.close()
+            os.remove(path + '/actual/' + folder_name + '/' + filename)
+            html += '''
+            <td>%s</td></tr>''' % first_line
 
     html += '''
     </tbody>
     </table>
     </div>
-    </body>
-    </html>'''
+    </td>
+    </tr>'''
 
-    print 'Creating report at %s/visualReport.html' % report_folder
-    output = open(report_folder + '/visualReport.html', 'w')
-    output.write(html)
-    output.close()
+html += '''
+</tbody>
+</table>
+</div>
+</body>
+</html>'''
 
-else:
-    raise ValueError('Provide a valid path to the xml report')
+print 'Creating report at %s/visualReport.html' % report_folder
+output = open(report_folder + '/visualReport.html', 'w')
+output.write(html)
+output.close()
