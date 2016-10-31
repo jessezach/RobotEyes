@@ -23,16 +23,17 @@ class RobotEyes(object):
 
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
+        test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'test':
-            if os.path.exists(self.root_path + '/actual/' + self.test_name):
-                shutil.rmtree(self.root_path + '/actual/' + self.test_name)
+            if os.path.exists(self.root_path + '/actual/' + test_name):
+                shutil.rmtree(self.root_path + '/actual/' + test_name)
 
-            if os.path.exists(self.root_path + '/diff/' + self.test_name):
-                shutil.rmtree(self.root_path + '/diff/' + self.test_name)
+            if os.path.exists(self.root_path + '/diff/' + test_name):
+                shutil.rmtree(self.root_path + '/diff/' + test_name)
         elif self.mode.lower() == 'baseline':
-            if os.path.exists(self.root_path + '/baseline/' + self.test_name):
-                shutil.rmtree(self.root_path + '/baseline/' + self.test_name)
+            if os.path.exists(self.root_path + '/baseline/' + test_name):
+                shutil.rmtree(self.root_path + '/baseline/' + test_name)
         else:
             raise ValueError('Browser/App is not open')
 
