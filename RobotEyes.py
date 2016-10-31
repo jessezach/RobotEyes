@@ -6,8 +6,7 @@ from robot.libraries.BuiltIn import BuiltIn
 
 class RobotEyes(object):
 
-    def __init__(self, env, mode):
-        self.env = env
+    def __init__(self, mode):
         self.mode = mode
         self.root_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -101,7 +100,7 @@ class RobotEyes(object):
         self.count += 1
 
     def compare_images(self):
-        if self.env.lower() == 'local' and self.mode.lower() == 'test':
+        if self.mode.lower() == 'test':
             test_name = self.test_name.replace(' ', '_')
             baseline_path = self.root_path + '/baseline/' + test_name
             actual_path = self.root_path + '/actual/' + test_name
