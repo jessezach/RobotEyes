@@ -51,7 +51,7 @@ class RobotEyes(object):
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
-    def capture_element(self, selector, left=0, top=0,right=0, bottom=0):
+    def capture_element(self, selector):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
@@ -87,15 +87,11 @@ class RobotEyes(object):
         size = search_element.size
 
         im = Image.open(path + '/img' + str(self.count) + '.png')
-        l = int(location['x'])
-        t = int(location['y'])
-        r = int(location['x'] + size['width'])
-        b = int(location['y'] + size['height'])
-        right = int(right)
-        bottom = int(bottom)
-        left = int(left)
-        top = int(top)
-        im = im.crop((left+l, top+t, right+r, bottom+b)) # defines crop points
+        left = int(location['x'])
+        top = int(location['y'])
+        right = int(location['x'] + size['width'])
+        bottom = int(location['y'] + size['height'])
+        im = im.crop((left+left, top+top, right+right, bottom+bottom)) # defines crop points
         im.save(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
