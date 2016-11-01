@@ -1,6 +1,6 @@
 from PIL import Image
 import subprocess
-import os, shutil
+import os, shutil, time
 from robot.libraries.BuiltIn import BuiltIn
 
 
@@ -79,20 +79,50 @@ class RobotEyes(object):
         elif prefix.lower() == 'css':
             search_element = self.driver.find_element_by_css_selector(locator)
 
+        location = search_element.location
+        size = search_element.size
+
         if not os.path.exists(path):
             os.makedirs(path)
 
         print 'Capturing element...'
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
-        location = search_element.location
-        size = search_element.size
 
         im = Image.open(path + '/img' + str(self.count) + '.png')
         left = int(location['x'])
         top = int(location['y'])
         right = int(location['x'] + size['width'])
         bottom = int(location['y'] + size['height'])
-        im = im.crop((left+left, top+top, right+right, bottom+bottom)) # defines crop points
+        im = im.crop((left+left, top+top, right+right, bottom+bottom))  # defines crop points
+        im.save(path + '/img' + str(self.count) + '.png')
+        self.count += 1
+
+    def scroll_to_element_and_capture(self, xpath):
+        test_name = self.test_name.replace(' ', '_')
+
+        if self.mode.lower() == 'baseline':
+            path = self.root_path + '/baseline/' + test_name
+        elif self.mode.lower() == 'test':
+            path = self.root_path + '/actual/' + test_name
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        search_element = self.driver.find_element_by_xpath(xpath)
+        self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
+        time.sleep(2)
+        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        xpath = xpath.replace('"', "'")
+        cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
+              ".singleNodeValue;return e.getBoundingClientRect();".format(xpath)
+        coord = self.driver.execute_script(cmd)
+        left = coord['left']
+        top = coord['top']
+        right = coord['right']
+        bottom = coord['bottom']
+
+        im = Image.open(path + '/img' + str(self.count) + '.png')
+        im = im.crop((left + left, top + top, right + right, bottom + bottom))  # defines crop points
         im.save(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
