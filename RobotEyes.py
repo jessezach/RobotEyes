@@ -52,6 +52,51 @@ class RobotEyes(object):
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
+    def capture_mobile_element(self, selector):
+        test_name = self.test_name.replace(' ', '_')
+
+        if self.mode.lower() == 'baseline':
+            path = self.root_path + '/baseline/' + test_name
+        elif self.mode.lower() == 'test':
+            path = self.root_path + '/actual/' + test_name
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if selector.startswith('//'):
+            prefix = 'xpath'
+            locator = selector
+        else:
+            selector_parts = selector.partition('=')
+            prefix = selector_parts[0].strip()
+            locator = selector_parts[2].strip()
+            if not locator:
+                raise ValueError('Please prefix locator type.')
+
+        if prefix.lower() == 'xpath':
+            search_element = self.driver.find_element_by_xpath(locator)
+        elif prefix.lower() == 'id':
+            search_element = self.driver.find_element_by_id(locator)
+        elif prefix.lower() == 'class':
+            search_element = self.driver.find_element_by_class_name(locator)
+        elif prefix.lower() == 'css':
+            search_element = self.driver.find_element_by_css_selector(locator)
+
+        location = search_element.location
+        size = search_element.size
+        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+
+        left = location['x']
+        top = location['y']
+        right = location['x'] + size['width']
+        bottom = location['y'] + size['height']
+        im = Image.open(path + '/img' + str(self.count) + '.png')
+        im = im.crop((left, top, right, bottom))  # defines crop points
+        im.save(path + '/img' + str(self.count) + '.png')
+        self.count += 1
+
+
+
     def capture_element(self, selector):
         test_name = self.test_name.replace(' ', '_')
 
