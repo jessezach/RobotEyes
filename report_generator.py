@@ -7,19 +7,20 @@ path = os.path.dirname(os.path.abspath(__file__))
 index = path.rfind('/')
 lib_folder = path[index + 1:]
 report_folder = path[:index]
+img_path = report_folder + '/visual_images/'
 
 try:
     report_path = sys.argv[1:][0]
 except IndexError:
     raise IndexError('Please provide the path to xml report')
 
-if not os.path.exists(path + '/actual/'):
+if not os.path.exists(img_path + '/actual/'):
     raise ValueError('Results directory does not exist')
 
-if not os.path.exists(path + '/baseline/'):
+if not os.path.exists(img_path + '/baseline/'):
     raise ValueError('Baseline directory does not exist')
 
-if not os.path.exists(path + '/diff/'):
+if not os.path.exists(img_path + '/diff/'):
     raise ValueError('Diff directory does not exist')
 
 html = '''
@@ -70,11 +71,11 @@ for t in tree.findall('.//test'):
     </thead>
     <tbody>''' % (folder_name, test_name, folder_name)
 
-    for filename in os.listdir(path + '/actual/' + folder_name):
+    for filename in os.listdir(img_path + '/actual/' + folder_name):
         if filename.endswith('.png'):
-            actual_img_path = lib_folder + '/actual/' + folder_name + '/' + filename
-            baseline_img_path = lib_folder + '/baseline/' + folder_name + '/' + filename
-            diff_img_path = lib_folder + '/diff/' + folder_name + '/' + filename
+            actual_img_path = 'visual_images' + '/actual/' + folder_name + '/' + filename
+            baseline_img_path = 'visual_images' + '/baseline/' + folder_name + '/' + filename
+            diff_img_path = 'visual_images' + '/diff/' + folder_name + '/' + filename
             html += '''
             <tr>
             <td><img src="%s" height="200" width="350"></td>
@@ -83,10 +84,10 @@ for t in tree.findall('.//test'):
             ''' % (baseline_img_path, actual_img_path, diff_img_path)
 
         elif filename.endswith('.txt'):
-            infile = open(path + '/actual/' + folder_name + '/' + filename, 'r')
+            infile = open(img_path + '/actual/' + folder_name + '/' + filename, 'r')
             first_line = infile.readline().strip()
             infile.close()
-            os.remove(path + '/actual/' + folder_name + '/' + filename)
+            os.remove(img_path + '/actual/' + folder_name + '/' + filename)
             html += '''
             <td>%s</td></tr>''' % first_line
 

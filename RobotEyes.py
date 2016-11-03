@@ -5,10 +5,11 @@ from robot.libraries.BuiltIn import BuiltIn
 
 
 class RobotEyes(object):
-
     def __init__(self, mode):
         self.mode = mode
         self.root_path = os.path.dirname(os.path.abspath(__file__))
+        index = self.root_path.rfind('/')
+        self.report_folder = self.root_path[:index] + '/visual_images'
 
     def open_eyes(self):
         try:
@@ -26,24 +27,24 @@ class RobotEyes(object):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'test':
-            if os.path.exists(self.root_path + '/actual/' + test_name):
-                shutil.rmtree(self.root_path + '/actual/' + test_name)
+            if os.path.exists(self.report_folder + '/actual/' + test_name):
+                shutil.rmtree(self.report_folder + '/actual/' + test_name)
 
-            if os.path.exists(self.root_path + '/diff/' + test_name):
-                shutil.rmtree(self.root_path + '/diff/' + test_name)
+            if os.path.exists(self.report_folder + '/diff/' + test_name):
+                shutil.rmtree(self.report_folder+ '/diff/' + test_name)
         elif self.mode.lower() == 'baseline':
-            if os.path.exists(self.root_path + '/baseline/' + test_name):
-                shutil.rmtree(self.root_path + '/baseline/' + test_name)
+            if os.path.exists(self.report_folder + '/baseline/' + test_name):
+                shutil.rmtree(self.report_folder + '/baseline/' + test_name)
         else:
-            raise ValueError('Browser/App is not open')
+            raise ValueError('Mode should be test or baseline')
 
     def capture_full_screen(self):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
-            path = self.root_path + '/baseline/' + test_name
+            path = self.report_folder + '/baseline/' + test_name
         elif self.mode.lower() == 'test':
-            path = self.root_path + '/actual/' + test_name
+            path = self.report_folder + '/actual/' + test_name
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -56,31 +57,14 @@ class RobotEyes(object):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
-            path = self.root_path + '/baseline/' + test_name
+            path = self.report_folder + '/baseline/' + test_name
         elif self.mode.lower() == 'test':
-            path = self.root_path + '/actual/' + test_name
+            path = self.report_folder + '/actual/' + test_name
 
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if selector.startswith('//'):
-            prefix = 'xpath'
-            locator = selector
-        else:
-            selector_parts = selector.partition('=')
-            prefix = selector_parts[0].strip()
-            locator = selector_parts[2].strip()
-            if not locator:
-                raise ValueError('Please prefix locator type.')
-
-        if prefix.lower() == 'xpath':
-            search_element = self.driver.find_element_by_xpath(locator)
-        elif prefix.lower() == 'id':
-            search_element = self.driver.find_element_by_id(locator)
-        elif prefix.lower() == 'class':
-            search_element = self.driver.find_element_by_class_name(locator)
-        elif prefix.lower() == 'css':
-            search_element = self.driver.find_element_by_css_selector(locator)
+        prefix, locator, search_element = self.element_finder(selector)
 
         location = search_element.location
         size = search_element.size
@@ -95,59 +79,23 @@ class RobotEyes(object):
         im.save(path + '/img' + str(self.count) + '.png')
         self.count += 1
 
-
-
     def capture_element(self, selector):
         test_name = self.test_name.replace(' ', '_')
 
         if self.mode.lower() == 'baseline':
-            path = self.root_path + '/baseline/' + test_name
+            path = self.report_folder + '/baseline/' + test_name
         elif self.mode.lower() == 'test':
-            path = self.root_path + '/actual/' + test_name
+            path = self.report_folder + '/actual/' + test_name
 
         if not os.path.exists(path):
             os.makedirs(path)
 
-        if selector.startswith('//'):
-            prefix = 'xpath'
-            locator = selector
-        else:
-            selector_parts = selector.partition('=')
-            prefix = selector_parts[0].strip()
-            locator = selector_parts[2].strip()
-            if not locator:
-                raise ValueError('Please prefix locator type.')
-
-        if prefix.lower() == 'xpath':
-            search_element = self.driver.find_element_by_xpath(locator)
-        elif prefix.lower() == 'id':
-            search_element = self.driver.find_element_by_id(locator)
-        elif prefix.lower() == 'class':
-            search_element = self.driver.find_element_by_class_name(locator)
-        elif prefix.lower() == 'css':
-            search_element = self.driver.find_element_by_css_selector(locator)
+        prefix, locator, search_element = self.element_finder(selector)
 
         self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
         time.sleep(2)
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
-
-        if prefix.lower() == 'xpath':
-            locator = locator.replace('"', "'")
-            cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
-                ".singleNodeValue;return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
-        elif prefix.lower() == 'css':
-            locator = locator.replace('"', "'")
-            cmd = "var e = document.querySelector(\"{0}\");return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
-        elif prefix.lower() == 'id':
-            cmd = "var e = document.getElementById(\"{0}\");return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
-        elif prefix.lower() == 'class':
-            cmd = "var e = document.getElementsByClassName(\"{0}\")[0];return e.getBoundingClientRect();"\
-                .format(locator)
-            coord = self.driver.execute_script(cmd)
-
+        coord = self.get_js_coords(prefix, locator)
         left = coord['left']
         top = coord['top']
         right = coord['right']
@@ -161,9 +109,9 @@ class RobotEyes(object):
     def compare_images(self):
         if self.mode.lower() == 'test':
             test_name = self.test_name.replace(' ', '_')
-            baseline_path = self.root_path + '/baseline/' + test_name
-            actual_path = self.root_path + '/actual/' + test_name
-            diff_path = self.root_path + '/diff/' + test_name
+            baseline_path = self.report_folder + '/baseline/' + test_name
+            actual_path = self.report_folder + '/actual/' + test_name
+            diff_path = self.report_folder + '/diff/' + test_name
 
             # compare actual and baseline images and save the diff image
             for filename in os.listdir(actual_path):
@@ -183,9 +131,49 @@ class RobotEyes(object):
                                   % (a_path, b_path, d_path)
 
                     proc = subprocess.Popen(compare_cmd,
-                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
                     difference = err.split()[1][1:-1]
                     output = open(actual_path + '/' + filename + '.txt', 'w')
                     output.write(difference)
                     output.close()
+
+    def element_finder(self, selector):
+        if selector.startswith('//'):
+            prefix = 'xpath'
+            locator = selector
+        else:
+            selector_parts = selector.partition('=')
+            prefix = selector_parts[0].strip()
+            locator = selector_parts[2].strip()
+            if not locator:
+                raise ValueError('Please prefix locator type.')
+
+        if prefix.lower() == 'xpath':
+            search_element = self.driver.find_element_by_xpath(locator)
+        elif prefix.lower() == 'id':
+            search_element = self.driver.find_element_by_id(locator)
+        elif prefix.lower() == 'class':
+            search_element = self.driver.find_element_by_class_name(locator)
+        elif prefix.lower() == 'css':
+            search_element = self.driver.find_element_by_css_selector(locator)
+        return prefix, locator, search_element
+
+    def get_js_coords(self, prefix, locator):
+        if prefix.lower() == 'xpath':
+            locator = locator.replace('"', "'")
+            cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
+                  ".singleNodeValue;return e.getBoundingClientRect();".format(locator)
+            coord = self.driver.execute_script(cmd)
+        elif prefix.lower() == 'css':
+            locator = locator.replace('"', "'")
+            cmd = "var e = document.querySelector(\"{0}\");return e.getBoundingClientRect();".format(locator)
+            coord = self.driver.execute_script(cmd)
+        elif prefix.lower() == 'id':
+            cmd = "var e = document.getElementById(\"{0}\");return e.getBoundingClientRect();".format(locator)
+            coord = self.driver.execute_script(cmd)
+        elif prefix.lower() == 'class':
+            cmd = "var e = document.getElementsByClassName(\"{0}\")[0];return e.getBoundingClientRect();" \
+                .format(locator)
+            coord = self.driver.execute_script(cmd)
+        return coord
