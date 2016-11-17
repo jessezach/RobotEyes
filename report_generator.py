@@ -2,26 +2,15 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
-
 path = os.path.dirname(os.path.abspath(__file__))
 index = path.rfind('/')
-lib_folder = path[index + 1:]
-report_folder = path[:index]
-img_path = report_folder + '/visual_images/'
+root_folder = path[:index]
 
 try:
-    report_path = sys.argv[1:][0]
+    report_path = sys.argv[1]
+    img_path = sys.argv[2]
 except IndexError:
-    raise IndexError('Please provide the path to xml report')
-
-if not os.path.exists(img_path + '/actual/'):
-    raise ValueError('Results directory does not exist')
-
-if not os.path.exists(img_path + '/baseline/'):
-    raise ValueError('Baseline directory does not exist')
-
-if not os.path.exists(img_path + '/diff/'):
-    raise ValueError('Diff directory does not exist')
+    raise IndexError('Please provide the path to xml report and images')
 
 html = '''
 <html>
@@ -56,11 +45,11 @@ for t in tree.findall('.//test'):
     <td>
     <button class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span></button>
     </td>
-    <td>%s</td
+    <td>%s</td>
     </tr>
     <tr>
     <td colspan="12" class="hiddenRow"><div class="accordian-body collapse" value="%s">
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover" id="innerResults">
     <thead>
     <tr>
     <th>Baseline</th>
@@ -71,25 +60,37 @@ for t in tree.findall('.//test'):
     </thead>
     <tbody>''' % (folder_name, test_name, folder_name)
 
-    for filename in os.listdir(img_path + '/actual/' + folder_name):
+    for filename in os.listdir(img_path + '/baseline/' + folder_name):
         if filename.endswith('.png'):
-            actual_img_path = 'visual_images' + '/actual/' + folder_name + '/' + filename
-            baseline_img_path = 'visual_images' + '/baseline/' + folder_name + '/' + filename
-            diff_img_path = 'visual_images' + '/diff/' + folder_name + '/' + filename
-            html += '''
-            <tr>
-            <td><img src="%s" height="200" width="350"></td>
-            <td><img src="%s" height="200" width="350"></td>
-            <td><img src="%s" height="200" width="350"></td>
-            ''' % (baseline_img_path, actual_img_path, diff_img_path)
+            html += '''<tr>'''
+            if os.path.exists(img_path + '/baseline/' + folder_name + '/' + filename):
+                actual_img_path = img_path + '/baseline/' + folder_name + '/' + filename
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (actual_img_path, actual_img_path)
+            else:
+                html += '''<td></td>'''
 
-        elif filename.endswith('.txt'):
-            infile = open(img_path + '/actual/' + folder_name + '/' + filename, 'r')
-            first_line = infile.readline().strip()
-            infile.close()
-            os.remove(img_path + '/actual/' + folder_name + '/' + filename)
-            html += '''
-            <td>%s</td></tr>''' % first_line
+            if os.path.exists(img_path + '/actual/' + folder_name + '/' + filename):
+                baseline_img_path = img_path + '/actual/' + folder_name + '/' + filename
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (baseline_img_path, baseline_img_path)
+            else:
+                html += '''<td></td>'''
+
+            if os.path.exists(img_path + '/diff/' + folder_name + '/' + filename):
+                diff_img_path = img_path + '/diff/' + folder_name + '/' + filename
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (diff_img_path, diff_img_path)
+            else:
+                html += '''<td></td>'''
+
+            txt_file = img_path + '/actual/' + folder_name + '/' + filename + ".txt"
+            if os.path.exists(txt_file):
+                infile = open(img_path + '/actual/' + folder_name + '/' + filename + ".txt", 'r')
+                first_line = infile.readline().strip()
+                infile.close()
+                os.remove(txt_file)
+                html += '''
+                <td>%s</td></tr>''' % first_line
+            else:
+                html += '''<td></td></tr>'''
 
     html += '''
     </tbody>
@@ -102,10 +103,39 @@ html += '''
 </tbody>
 </table>
 </div>
+<script>
+    $(document).ready(function() {
+      var t = 1;
+      $("table#innerResults").each(function() {
+        var max = 0.0;
+        var $items = $(this).find('tbody tr');
+        var len = $items.length;
+        $.each($items, function(n, e) {
+          diff = $(e).find('td:last').text()
+          diff = parseFloat(diff);
+          if (diff > max) {
+            max = diff
+          }
+        });
+        if(max < 0.1) {
+          $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
+          t = t+2;
+        }
+        else if(max >= 0.1 && max < 0.2) {
+          $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','orange');
+          t = t+2;
+        }
+        else  {
+         $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','red');
+         t = t+2;
+        }
+      });
+    });
+</script>
 </body>
 </html>'''
 
-print 'Creating report at %s/visualReport.html' % report_folder
-output = open(report_folder + '/visualReport.html', 'w')
+print "Creating visual report at %s/visualReport.html" % root_folder
+output = open(root_folder + '/visualReport.html', 'w')
 output.write(html)
 output.close()

@@ -2,16 +2,18 @@ from PIL import Image
 import subprocess
 import os, shutil, time
 from robot.libraries.BuiltIn import BuiltIn
+import platform
 
 
 class RobotEyes(object):
     def __init__(self, mode):
         self.mode = mode
-        self.root_path = os.path.dirname(os.path.abspath(__file__))
-        index = self.root_path.rfind('/')
-        self.report_folder = self.root_path[:index] + '/visual_images'
+        self.sys = platform.system()
 
     def open_eyes(self):
+        self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
+        self.report_folder = self.output_dir + '/visual_images'
+
         try:
             s2l = BuiltIn().get_library_instance('Selenium2Library')
             self.driver = s2l._current_browser()
@@ -38,72 +40,54 @@ class RobotEyes(object):
         else:
             raise ValueError('Mode should be test or baseline')
 
-    def capture_full_screen(self):
-        test_name = self.test_name.replace(' ', '_')
-
         if self.mode.lower() == 'baseline':
-            path = self.report_folder + '/baseline/' + test_name
+            self.path = self.report_folder + '/baseline/' + test_name
         elif self.mode.lower() == 'test':
-            path = self.report_folder + '/actual/' + test_name
+            self.path = self.report_folder + '/actual/' + test_name
 
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
 
+    def capture_full_screen(self):
         print 'Capturing page...'
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
 
     def capture_mobile_element(self, selector):
-        test_name = self.test_name.replace(' ', '_')
-
-        if self.mode.lower() == 'baseline':
-            path = self.report_folder + '/baseline/' + test_name
-        elif self.mode.lower() == 'test':
-            path = self.report_folder + '/actual/' + test_name
-
-        if not os.path.exists(path):
-            os.makedirs(path)
 
         prefix, locator, search_element = self.element_finder(selector)
 
         location = search_element.location
         size = search_element.size
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
 
         left = location['x']
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
-        im = Image.open(path + '/img' + str(self.count) + '.png')
+        im = Image.open(self.path + '/img' + str(self.count) + '.png')
         im = im.crop((left, top, right, bottom))  # defines crop points
-        im.save(path + '/img' + str(self.count) + '.png')
+        im.save(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
 
     def capture_element(self, selector):
-        test_name = self.test_name.replace(' ', '_')
-
-        if self.mode.lower() == 'baseline':
-            path = self.report_folder + '/baseline/' + test_name
-        elif self.mode.lower() == 'test':
-            path = self.report_folder + '/actual/' + test_name
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
         prefix, locator, search_element = self.element_finder(selector)
 
         self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
         time.sleep(2)
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         coord = self.get_js_coords(prefix, locator)
         left = coord['left']
         top = coord['top']
         right = coord['right']
         bottom = coord['bottom']
 
-        im = Image.open(path + '/img' + str(self.count) + '.png')
-        im = im.crop((left + left, top + top, right + right, bottom + bottom))  # defines crop points
-        im.save(path + '/img' + str(self.count) + '.png')
+        im = Image.open(self.path + '/img' + str(self.count) + '.png')
+        if self.sys.lower() == "darwin":
+            im = im.crop((left+left, top+top, right+right, bottom+bottom))  # defines crop points
+        else:
+            im = im.crop((left, top, right, bottom))  # defines crop points
+        im.save(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
 
     def compare_images(self):
