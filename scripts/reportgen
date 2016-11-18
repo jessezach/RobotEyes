@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+
+from RobotEyes import report_generator
+import sys, os
+
+root_folder = os.getcwd()
+
+try:
+    report_path = sys.argv[1]
+    img_path = sys.argv[2]
+except IndexError:
+    raise IndexError('Please provide the path to xml report and images')
+
+report_generator.generate_report(root_folder, report_path, img_path)
