@@ -72,9 +72,7 @@ class RobotEyes(object):
 
     def capture_element(self, selector):
         prefix, locator, search_element = self.element_finder(selector)
-
-        self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
-        time.sleep(2)
+        time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         coord = self.get_js_coords(prefix, locator)
         left = coord['left']
@@ -89,6 +87,10 @@ class RobotEyes(object):
             im = im.crop((left, top, right, bottom))  # defines crop points
         im.save(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
+
+    def scroll_to_element(self, selector):
+        prefix, locator, search_element = self.element_finder(selector)
+        self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
 
     def compare_images(self):
         if self.mode.lower() == 'test':
