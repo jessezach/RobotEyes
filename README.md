@@ -12,9 +12,11 @@ visual test report.
 - A custom report will be generated at the root of your project. 
 - It will display the baseline images if run on "baseline" mode. Baseline, Actual and diff in "test" mode.
 
-Example:
-Library  Selenium2Library
-Library  RobotEyes  test (or baseline, if running for the first time)
+Example:  <br/>
+<br/>
+*** Settings ***    <br/>
+**Library**  Selenium2Library    <br/>
+**Library**  RobotEyes  test (or baseline, if running for the first time)   <br/>
 
 
 *** Test Cases ***    
