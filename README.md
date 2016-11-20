@@ -12,3 +12,21 @@ visual test report.
 - A custom report will be generated at the root of your project. 
 - It will display the baseline images if run on "baseline" mode. Baseline, Actual and diff in "test" mode.
 
+Example:
+Library  Selenium2Library
+Library  RobotEyes  test (or baseline, if running for the first time)
+
+
+*** Test Cases ***
+Sample visual regression test case
+	open browser  https://www.google.com/  chrome
+	maximize browser window
+	open eyes
+	wait until element is visible  id=lst-ib
+	capture full screen
+	capture element  id=hplogo
+	compare images
+	close browser
+
+To generate the report:
+reportgen /path/to/output directory
