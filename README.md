@@ -17,16 +17,15 @@ Library  Selenium2Library
 Library  RobotEyes  test (or baseline, if running for the first time)
 
 
-*** Test Cases ***
-Sample visual regression test case
-	open browser  https://www.google.com/  chrome
-	maximize browser window
-	open eyes
-	wait until element is visible  id=lst-ib
-	capture full screen
-	capture element  id=hplogo
-	compare images
-	close browser
+*** Test Cases ***    
+**Sample visual regression test case**   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open browser  https://www.google.com/  chrome     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maximize browser window    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open eyes    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait until element is visible  id=lst-ib    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture element  id=hplogo    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare images    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close browser
 
 To generate the report:
-reportgen /path/to/output directory
+**reportgen /path/to/output directory**
