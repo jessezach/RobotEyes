@@ -129,6 +129,7 @@ class RobotEyes(object):
                     proc = subprocess.Popen(compare_cmd,
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
+                    print err
                     difference = err.split()[1][1:-1]
                     output = open(actual_path + '/' + filename + '.txt', 'w')
                     output.write(difference)
