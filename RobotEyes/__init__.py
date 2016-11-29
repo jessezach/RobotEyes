@@ -124,7 +124,7 @@ class RobotEyes(object):
 
 
                     compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                  % (a_path, b_path, d_path)
+                                  % (b_path, a_path, d_path)
 
                     proc = subprocess.Popen(compare_cmd,
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
