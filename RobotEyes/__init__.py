@@ -120,6 +120,7 @@ class RobotEyes(object):
 
                     p = subprocess.Popen(resize_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     o, e = p.communicate()
+                    print e
 
 
                     compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
