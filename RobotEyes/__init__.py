@@ -113,17 +113,14 @@ class RobotEyes(object):
                     a_path = actual_path + '/' + filename
                     d_path = diff_path + '/' + filename
 
-                    im = Image.open(b_path)
-                    width, height = im.size
-                    resize_cmd = 'mogrify -resize %sx%s %s' %(width, height, a_path)
-                    im.close()
+                    baseline_size = os.path.getsize(b_path)
+                    actual_size = os.path.getsize(a_path)
 
-                    p = subprocess.Popen(resize_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-                    o, e = p.communicate()
-                    print e
-
-
-                    compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                    if actual_size > baseline_size:
+                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                                  % (a_path, b_path, d_path)
+                    else:
+                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
                                   % (b_path, a_path, d_path)
 
                     proc = subprocess.Popen(compare_cmd,
