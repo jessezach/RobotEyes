@@ -117,12 +117,8 @@ def generate_report(root_folder, report_path, img_path):
                 max = diff
               }
             });
-            if(max < 0.1) {
+            if(max < 0.05) {
               $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
-              t = t+2;
-            }
-            else if(max >= 0.1 && max < 0.2) {
-              $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','orange');
               t = t+2;
             }
             else  {
