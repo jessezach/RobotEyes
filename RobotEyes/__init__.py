@@ -113,12 +113,36 @@ class RobotEyes(object):
                     a_path = actual_path + '/' + filename
                     d_path = diff_path + '/' + filename
 
-                    compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                  % (a_path, b_path, d_path)
+                    if os.path.exists(b_path):
+                        im = Image.open(b_path)
+                        b_width, b_height = im.size
+                        im.close()
+                        im = Image.open(a_path)
+                        a_width, a_height = im.size
+                        im.close()
+
+                        b_area = int(b_width) * int(b_height)
+                        a_area = int(a_width) * int(a_height)
+
+                        if b_area > a_area:
+                            large_image = b_path
+                            small_image = a_path
+                        else:
+                            large_image = a_path
+                            small_image = b_path
+                        
+                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                                     % (large_image, small_image, d_path)
+                    else:
+                        print 'Baseline image does not exist..'
+                        b_path = ''
+                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                                     % (b_path, a_path, d_path)
 
                     proc = subprocess.Popen(compare_cmd,
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
+                    print err
                     difference = err.split()[1][1:-1]
                     output = open(actual_path + '/' + filename + '.txt', 'w')
                     output.write(difference)

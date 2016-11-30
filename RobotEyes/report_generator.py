@@ -61,15 +61,23 @@ def generate_report(root_folder, report_path, img_path):
                 else:
                     html += '''<td></td>'''
 
+               
                 if os.path.exists(img_path + '/actual/' + folder_name + '/' + filename):
                     baseline_img_path = img_path + '/actual/' + folder_name + '/' + filename
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (baseline_img_path, baseline_img_path)
+
                 else:
                     html += '''<td></td>'''
 
+                arr = filename.split('.')
                 if os.path.exists(img_path + '/diff/' + folder_name + '/' + filename):
                     diff_img_path = img_path + '/diff/' + folder_name + '/' + filename
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (diff_img_path, diff_img_path)
+                
+                elif os.path.exists(img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'):
+                    diff_img_path = img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'
+                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (diff_img_path, diff_img_path)
+
                 else:
                     html += '''<td></td>'''
 
@@ -109,12 +117,8 @@ def generate_report(root_folder, report_path, img_path):
                 max = diff
               }
             });
-            if(max < 0.1) {
+            if(max < 0.05) {
               $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
-              t = t+2;
-            }
-            else if(max >= 0.1 && max < 0.2) {
-              $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','orange');
               t = t+2;
             }
             else  {
