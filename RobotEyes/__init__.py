@@ -149,34 +149,31 @@ class RobotEyes(object):
 
                         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
                                       % (large_image, small_image, d_path)
+
+                        proc = subprocess.Popen(compare_cmd,
+                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                        out, err = proc.communicate()
+                        print err
+                        difference = float(err.split()[1][1:-1])
+
+                        fname = open(actual_path + '/' + filename + '.txt', 'r')
+                        threshold = float(fname.readline())
+                        fname.close()
+
+                        if difference > threshold:
+                            color = 'red'
+                            result = '%s<%s' % (threshold, difference)
+                        else:
+                            color = 'green'
+                            result = '%s>=%s' % (threshold, difference)
+
+                        text = '%s %s' % (result, color)
+
+                        output = open(actual_path + '/' + filename + '.txt', 'w')
+                        output.write(text)
+                        output.close()
                     else:
                         print 'Baseline image does not exist..'
-                        b_path = ''
-                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                      % (b_path, a_path, d_path)
-
-                    proc = subprocess.Popen(compare_cmd,
-                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-                    out, err = proc.communicate()
-                    print err
-                    difference = float(err.split()[1][1:-1])
-
-                    fname = open(actual_path + '/' + filename + '.txt', 'r')
-                    threshold = float(fname.readline())
-                    fname.close()
-
-                    if difference > threshold:
-                        color = 'red'
-                        result = '%s<%s' % (threshold, difference)
-                    else:
-                        color = 'green'
-                        result = '%s>=%s' % (threshold, difference)
-
-                    text = '%s %s' % (result, color)
-
-                    output = open(actual_path + '/' + filename + '.txt', 'w')
-                    output.write(text)
-                    output.close()
 
     def element_finder(self, selector):
         if selector.startswith('//'):
