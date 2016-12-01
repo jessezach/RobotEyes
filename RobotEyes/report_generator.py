@@ -44,10 +44,10 @@ def generate_report(root_folder, report_path, img_path):
         <table class="table table-bordered table-hover" id="innerResults">
         <thead>
         <tr>
-        <th>Baseline</th>
-        <th>Actual</th>
-        <th>Diff</th>
-        <th>Diff value</th>
+        <th style="text-align:center;vertical-align:middle">Baseline</th>
+        <th style="text-align:center;vertical-align:middle">Actual</th>
+        <th style="text-align:center;vertical-align:middle">Diff</th>
+        <th>Diff value<br><font size="2">(Exp : Actual)</font></th>
         </tr>
         </thead>
         <tbody>''' % (folder_name, test_name, folder_name)
@@ -85,10 +85,10 @@ def generate_report(root_folder, report_path, img_path):
                 if os.path.exists(txt_file):
                     infile = open(img_path + '/actual/' + folder_name + '/' + filename + ".txt", 'r')
                     first_line = infile.readline().strip()
+                    arr = first_line.split()
                     infile.close()
-                    os.remove(txt_file)
                     html += '''
-                    <td>%s</td></tr>''' % first_line
+                    <td style="color:%s;">%s</td></tr>''' % (arr[1].lower(), arr[0])
                 else:
                     html += '''<td></td></tr>'''
 
@@ -107,22 +107,19 @@ def generate_report(root_folder, report_path, img_path):
         $(document).ready(function() {
           var t = 1;
           $("table#innerResults").each(function() {
-            var max = 0.0;
             var $items = $(this).find('tbody tr');
-            var len = $items.length;
             $.each($items, function(n, e) {
-              diff = $(e).find('td:last').text()
-              diff = parseFloat(diff);
-              if (diff > max) {
-                max = diff
+              color = $(e).find('td:last').css('color');
+              if (color == 'rgb(255, 0, 0)') {
+                return false;
               }
             });
-            if(max < 0.05) {
-              $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
+            if(color == 'rgb(255, 0, 0)') {
+              $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','red');
               t = t+2;
             }
             else  {
-             $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','red');
+             $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
              t = t+2;
             }
           });

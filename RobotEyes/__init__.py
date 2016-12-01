@@ -6,9 +6,10 @@ import platform
 
 
 class RobotEyes(object):
-    def __init__(self, mode):
+    def __init__(self, mode, tolerance=0):
         self.mode = mode
         self.sys = platform.system()
+        self.tolerance = tolerance
 
     def open_eyes(self):
         self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
@@ -33,7 +34,7 @@ class RobotEyes(object):
                 shutil.rmtree(self.report_folder + '/actual/' + test_name)
 
             if os.path.exists(self.report_folder + '/diff/' + test_name):
-                shutil.rmtree(self.report_folder+ '/diff/' + test_name)
+                shutil.rmtree(self.report_folder + '/diff/' + test_name)
         elif self.mode.lower() == 'baseline':
             if os.path.exists(self.report_folder + '/baseline/' + test_name):
                 shutil.rmtree(self.report_folder + '/baseline/' + test_name)
@@ -48,9 +49,15 @@ class RobotEyes(object):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
-    def capture_full_screen(self):
+    def capture_full_screen(self, tolerance=None):
         print 'Capturing page...'
+        if not tolerance:
+            tolerance = self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
+        if self.mode.lower() == 'test':
+            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
+            output.write(str(tolerance))
+            output.close()
         self.count += 1
 
     def capture_mobile_element(self, selector):
@@ -70,7 +77,11 @@ class RobotEyes(object):
         im.save(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
 
-    def capture_element(self, selector):
+    def capture_element(self, selector, tolerance=None):
+
+        if not tolerance:
+            tolerance = self.tolerance
+
         prefix, locator, search_element = self.element_finder(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
@@ -82,10 +93,15 @@ class RobotEyes(object):
 
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
         if self.sys.lower() == "darwin":
-            im = im.crop((left+left, top+top, right+right, bottom+bottom))  # defines crop points
+            im = im.crop((left + left, top + top, right + right, bottom + bottom))  # defines crop points
         else:
             im = im.crop((left, top, right, bottom))  # defines crop points
         im.save(self.path + '/img' + str(self.count) + '.png')
+
+        if self.mode.lower() == 'test':
+            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
+            output.write(str(tolerance))
+            output.close()
         self.count += 1
 
     def scroll_to_element(self, selector):
@@ -130,22 +146,36 @@ class RobotEyes(object):
                         else:
                             large_image = a_path
                             small_image = b_path
-                        
+
                         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                     % (large_image, small_image, d_path)
+                                      % (large_image, small_image, d_path)
                     else:
                         print 'Baseline image does not exist..'
                         b_path = ''
                         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                     % (b_path, a_path, d_path)
+                                      % (b_path, a_path, d_path)
 
                     proc = subprocess.Popen(compare_cmd,
                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                     out, err = proc.communicate()
                     print err
-                    difference = err.split()[1][1:-1]
+                    difference = float(err.split()[1][1:-1])
+
+                    fname = open(actual_path + '/' + filename + '.txt', 'r')
+                    threshold = float(fname.readline())
+                    fname.close()
+
+                    if difference > threshold:
+                        color = 'red'
+                        result = '%s<%s' % (threshold, difference)
+                    else:
+                        color = 'green'
+                        result = '%s>=%s' % (threshold, difference)
+
+                    text = '%s %s' % (result, color)
+
                     output = open(actual_path + '/' + filename + '.txt', 'w')
-                    output.write(difference)
+                    output.write(text)
                     output.close()
 
     def element_finder(self, selector):
