@@ -110,7 +110,6 @@ def generate_report(root_folder, report_path, img_path):
             var $items = $(this).find('tbody tr');
             $.each($items, function(n, e) {
               color = $(e).find('td:last').css('color');
-              console.log(color);
               if (color == 'rgb(255, 0, 0)') {
                 return false;
               }
