@@ -44,10 +44,10 @@ def generate_report(root_folder, report_path, img_path):
         <table class="table table-bordered table-hover" id="innerResults">
         <thead>
         <tr>
-        <th>Baseline</th>
-        <th>Actual</th>
-        <th>Diff</th>
-        <th>Diff value(Expected : Actual)</th>
+        <th style="text-align:center;vertical-align:middle">Baseline</th>
+        <th style="text-align:center;vertical-align:middle">Actual</th>
+        <th style="text-align:center;vertical-align:middle">Diff</th>
+        <th>Diff value<br><font size="2">(Exp : Actual)</font></th>
         </tr>
         </thead>
         <tbody>''' % (folder_name, test_name, folder_name)
