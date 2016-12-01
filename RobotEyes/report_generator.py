@@ -107,7 +107,6 @@ def generate_report(root_folder, report_path, img_path):
         $(document).ready(function() {
           var t = 1;
           $("table#innerResults").each(function() {
-            console.log('HELLO');
             var $items = $(this).find('tbody tr');
             $.each($items, function(n, e) {
               color = $(e).find('td:last').css('color');
