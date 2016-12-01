@@ -47,7 +47,7 @@ def generate_report(root_folder, report_path, img_path):
         <th>Baseline</th>
         <th>Actual</th>
         <th>Diff</th>
-        <th>Diff value</th>
+        <th>Diff value(Expected : Actual)</th>
         </tr>
         </thead>
         <tbody>''' % (folder_name, test_name, folder_name)
