@@ -16,7 +16,7 @@ Example:  <br/>
 <br/>
 *** Settings ***    <br/>
 **Library**  Selenium2Library    <br/>
-**Library**  RobotEyes  test (or baseline, if running for the first time)   <br/>
+**Library**  RobotEyes  test (or baseline, if running for the first time)  0.01(Global test tolerance, optional)    <br/>
 
 
 *** Test Cases ***    
@@ -24,7 +24,7 @@ Example:  <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open browser  https://www.google.com/  chrome     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maximize browser window    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open eyes    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait until element is visible  id=lst-ib    <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen  0.05(tolerance to override global value, optional)    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture element  id=hplogo    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare images    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close browser
