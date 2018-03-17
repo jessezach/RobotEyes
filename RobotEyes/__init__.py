@@ -1,11 +1,22 @@
-from PIL import Image
+import os
+import shutil
+import time
 import subprocess
-import os, shutil, time
-from robot.libraries.BuiltIn import BuiltIn
 import platform
+
+from PIL import Image
+from robot.libraries.BuiltIn import BuiltIn
+
+from constants import *
 
 
 class RobotEyes(object):
+    output_dir = ''
+    images_base_folder = ''
+    driver = None
+    test_name = ''
+    count = 0
+
     def __init__(self, mode, tolerance=0):
         self.mode = mode
         self.sys = platform.system()
@@ -13,7 +24,7 @@ class RobotEyes(object):
 
     def open_eyes(self):
         self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
-        self.report_folder = self.output_dir + '/visual_images'
+        self.images_base_folder = self.output_dir + IMAGES_FOLDER
 
         try:
             s2l = BuiltIn().get_library_instance('Selenium2Library')
@@ -27,42 +38,53 @@ class RobotEyes(object):
 
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
-        test_name = self.test_name.replace(' ', '_')
+        test_name_folder = self.test_name.replace(' ', '_')
 
-        if self.mode.lower() == 'test':
-            if os.path.exists(self.report_folder + '/actual/' + test_name):
-                shutil.rmtree(self.report_folder + '/actual/' + test_name)
+        # delete if directory already exist. Fresh test
+        self._delete_folder_if_exists(test_name_folder)
 
-            if os.path.exists(self.report_folder + '/diff/' + test_name):
-                shutil.rmtree(self.report_folder + '/diff/' + test_name)
-        elif self.mode.lower() == 'baseline':
-            if os.path.exists(self.report_folder + '/baseline/' + test_name):
-                shutil.rmtree(self.report_folder + '/baseline/' + test_name)
+        # recreate deleted folder
+        self._create_empty_folder(test_name_folder)
+
+    def _delete_folder_if_exists(self, test_name_folder):
+        if self.mode.lower() == MODE_TEST:
+            if os.path.exists(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder)
+
+            if os.path.exists(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder)
+
+        elif self.mode.lower() == MODE_BASELINE:
+            if os.path.exists(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder)
+
         else:
-            raise ValueError('Mode should be test or baseline')
+            raise AssertionError('Mode should be test or baseline')
 
-        if self.mode.lower() == 'baseline':
-            self.path = self.report_folder + '/baseline/' + test_name
-        elif self.mode.lower() == 'test':
-            self.path = self.report_folder + '/actual/' + test_name
+    def _create_empty_folder(self, test_name_folder):
+        if self.mode.lower() == MODE_BASELINE:
+            self.path = self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder
+
+        elif self.mode.lower() == MODE_TEST:
+            self.path = self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
     def capture_full_screen(self, tolerance=None):
-        print 'Capturing page...'
+        print('Capturing page...')
         if not tolerance:
             tolerance = self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-        if self.mode.lower() == 'test':
+
+        if self.mode.lower() == MODE_TEST:
             output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
             output.write(str(tolerance))
             output.close()
         self.count += 1
 
     def capture_mobile_element(self, selector):
-
-        prefix, locator, search_element = self.element_finder(selector)
+        prefix, locator, search_element = self._find_element(selector)
 
         location = search_element.location
         size = search_element.size
@@ -72,90 +94,65 @@ class RobotEyes(object):
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
-        im = Image.open(self.path + '/img' + str(self.count) + '.png')
-        im = im.crop((left, top, right, bottom))  # defines crop points
-        im.save(self.path + '/img' + str(self.count) + '.png')
+        image = Image.open(self.path + '/img' + str(self.count) + '.png')
+        image = image.crop((left, top, right, bottom))  # defines crop points
+        image.save(self.path + '/img' + str(self.count) + '.png')
         self.count += 1
 
     def capture_element(self, selector, tolerance=None):
-
         if not tolerance:
             tolerance = self.tolerance
 
-        prefix, locator, search_element = self.element_finder(selector)
+        prefix, locator, search_element = self._find_element(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-        coord = self.get_js_coords(prefix, locator)
+        coord = self._get_js_coords(prefix, locator)
         left = coord['left']
         top = coord['top']
         right = coord['right']
         bottom = coord['bottom']
 
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
+
         if self.sys.lower() == "darwin":
-            im = im.crop((left + left, top + top, right + right, bottom + bottom))  # defines crop points
+            im = im.crop((left + left, top + top, right + right, bottom + bottom))
         else:
             im = im.crop((left, top, right, bottom))  # defines crop points
         im.save(self.path + '/img' + str(self.count) + '.png')
 
-        if self.mode.lower() == 'test':
+        if self.mode.lower() == MODE_TEST:
             output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
             output.write(str(tolerance))
             output.close()
         self.count += 1
 
     def scroll_to_element(self, selector):
-        prefix, locator, search_element = self.element_finder(selector)
+        prefix, locator, search_element = self._find_element(selector)
         self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
 
     def compare_images(self):
-        if self.mode.lower() == 'test':
+        if self.mode.lower() == MODE_TEST:
             test_name = self.test_name.replace(' ', '_')
-            baseline_path = self.report_folder + '/baseline/' + test_name
-            actual_path = self.report_folder + '/actual/' + test_name
-            diff_path = self.report_folder + '/diff/' + test_name
+            baseline_path = self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name
+            actual_path = self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name
+            diff_path = self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name
+
+            if not os.path.exists(diff_path):
+                os.makedirs(diff_path)
 
             # compare actual and baseline images and save the diff image
             for filename in os.listdir(actual_path):
+                a_path = ''
+                b_path = ''
+                d_path = ''
+
                 if filename.endswith('.png'):
-                    a_path = ''
-                    b_path = ''
-                    d_path = ''
-
-                    if not os.path.exists(diff_path):
-                        os.makedirs(diff_path)
-
                     b_path = baseline_path + '/' + filename
                     a_path = actual_path + '/' + filename
                     d_path = diff_path + '/' + filename
 
                     if os.path.exists(b_path):
-                        im = Image.open(b_path)
-                        b_width, b_height = im.size
-                        im.close()
-                        im = Image.open(a_path)
-                        a_width, a_height = im.size
-                        im.close()
-
-                        b_area = int(b_width) * int(b_height)
-                        a_area = int(a_width) * int(a_height)
-
-                        if b_area > a_area:
-                            large_image = b_path
-                            small_image = a_path
-                        else:
-                            large_image = a_path
-                            small_image = b_path
-
-                        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                                      % (large_image, small_image, d_path)
-
-                        proc = subprocess.Popen(compare_cmd,
-                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-                        out, err = proc.communicate()
-                        print err
-                        difference = float(err.split()[1][1:-1])
-
+                        difference = self._compare(b_path, a_path, d_path)
                         fname = open(actual_path + '/' + filename + '.txt', 'r')
                         threshold = float(fname.readline())
                         fname.close()
@@ -163,9 +160,14 @@ class RobotEyes(object):
                         if difference > threshold:
                             color = 'red'
                             result = '%s<%s' % (threshold, difference)
+
+                        elif difference == threshold:
+                            color = 'green'
+                            result = '%s==%s' % (threshold, difference)
+
                         else:
                             color = 'green'
-                            result = '%s>=%s' % (threshold, difference)
+                            result = '%s>%s' % (threshold, difference)
 
                         text = '%s %s' % (result, color)
 
@@ -173,9 +175,37 @@ class RobotEyes(object):
                         output.write(text)
                         output.close()
                     else:
-                        print 'Baseline image does not exist..'
+                        raise Exception('Baseline image does not exist for %s in test %s' % (filename, test_name))
 
-    def element_finder(self, selector):
+    def _compare(self, b_path, a_path, d_path):
+        im = Image.open(b_path)
+        b_width, b_height = im.size
+        im.close()
+
+        im = Image.open(a_path)
+        a_width, a_height = im.size
+        im.close()
+
+        b_area = int(b_width) * int(b_height)
+        a_area = int(a_width) * int(a_height)
+
+        if b_area > a_area:
+            large_image = b_path
+            small_image = a_path
+        else:
+            large_image = a_path
+            small_image = b_path
+
+        compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
+                      % (large_image, small_image, d_path)
+
+        proc = subprocess.Popen(compare_cmd,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = proc.communicate()
+        print(err)
+        return float(err.split()[1][1:-1])
+
+    def _find_element(self, selector):
         if selector.startswith('//'):
             prefix = 'xpath'
             locator = selector
@@ -196,7 +226,7 @@ class RobotEyes(object):
             search_element = self.driver.find_element_by_css_selector(locator)
         return prefix, locator, search_element
 
-    def get_js_coords(self, prefix, locator):
+    def _get_js_coords(self, prefix, locator):
         if prefix.lower() == 'xpath':
             locator = locator.replace('"', "'")
             cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
