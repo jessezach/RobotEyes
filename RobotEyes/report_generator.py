@@ -57,14 +57,15 @@ def generate_report(root_folder, report_path, img_path):
                 html += '''<tr>'''
                 if os.path.exists(img_path + '/baseline/' + folder_name + '/' + filename):
                     actual_img_path = img_path + '/baseline/' + folder_name + '/' + filename
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (actual_img_path, actual_img_path)
+                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                            % (actual_img_path, actual_img_path)
                 else:
                     html += '''<td></td>'''
 
-               
                 if os.path.exists(img_path + '/actual/' + folder_name + '/' + filename):
                     baseline_img_path = img_path + '/actual/' + folder_name + '/' + filename
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (baseline_img_path, baseline_img_path)
+                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                            % (baseline_img_path, baseline_img_path)
 
                 else:
                     html += '''<td></td>'''
@@ -72,11 +73,13 @@ def generate_report(root_folder, report_path, img_path):
                 arr = filename.split('.')
                 if os.path.exists(img_path + '/diff/' + folder_name + '/' + filename):
                     diff_img_path = img_path + '/diff/' + folder_name + '/' + filename
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (diff_img_path, diff_img_path)
+                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
+                            % (diff_img_path, diff_img_path)
                 
                 elif os.path.exists(img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'):
                     diff_img_path = img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' % (diff_img_path, diff_img_path)
+                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
+                            % (diff_img_path, diff_img_path)
 
                 else:
                     html += '''<td></td>'''
@@ -128,7 +131,32 @@ def generate_report(root_folder, report_path, img_path):
     </body>
     </html>'''
 
-    print "Creating visual report at %s/visualReport.html" % root_folder
+    print("Creating visual report at %s/visualReport.html" % root_folder)
     output = open(root_folder + '/visualReport.html', 'w')
     output.write(html)
     output.close()
+
+
+if __name__ == "__main__":
+    root_folder = os.getcwd()
+    import os
+
+    try:
+        output_dir = sys.argv[1]
+
+    except IndexError:
+        print("Assuming results stored in root..")
+        output_dir = ""
+
+    if output_dir.endswith('/') or not output_dir:
+        report_path = output_dir + 'output.xml'
+        img_path = output_dir + 'visual_images'
+
+    else:
+        report_path = output_dir + '/output.xml'
+        img_path = output_dir + '/visual_images'
+
+    if os.path.exists(root_folder + "/" + report_path) and os.path.exists(root_folder + "/" + img_path):
+        generate_report(root_folder, report_path, img_path)
+    else:
+        raise Exception("Please provide a valid path to results.")
