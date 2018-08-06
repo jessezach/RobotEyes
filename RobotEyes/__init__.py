@@ -106,7 +106,7 @@ class RobotEyes(object):
         prefix, locator, search_element = self._find_element(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-        coord = self._get_js_coords(prefix, locator)
+        coord = self._get_coordinates(prefix, locator)
         left = coord['left']
         top = coord['top']
         right = coord['right']
@@ -188,14 +188,14 @@ class RobotEyes(object):
 
         b_area = int(b_width) * int(b_height)
         a_area = int(a_width) * int(a_height)
-
+        
+        large_image = a_path
+        small_image = b_path
+        
         if b_area > a_area:
             large_image = b_path
             small_image = a_path
-        else:
-            large_image = a_path
-            small_image = b_path
-
+            
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
                       % (large_image, small_image, d_path)
 
@@ -214,19 +214,21 @@ class RobotEyes(object):
             prefix = selector_parts[0].strip()
             locator = selector_parts[2].strip()
             if not locator:
-                raise ValueError('Please prefix locator type.')
-
-        if prefix.lower() == 'xpath':
-            search_element = self.driver.find_element_by_xpath(locator)
-        elif prefix.lower() == 'id':
-            search_element = self.driver.find_element_by_id(locator)
-        elif prefix.lower() == 'class':
-            search_element = self.driver.find_element_by_class_name(locator)
-        elif prefix.lower() == 'css':
-            search_element = self.driver.find_element_by_css_selector(locator)
+                raise Exception('Please prefix locator type.')
+        dict = {
+            'xpath': self.driver.find_element_by_xpath,
+            'id': self.driver.find_element_by_id,
+            'class': self.driver.find_element_by_class_name,
+            'css': self.driver.find_element_by_css_selector
+        }
+        if prefix.lower() not in dict:
+            raise Exception('Please add a valid locator prefix. Eg xpath, css, class.')
+            
+        func = dict[prefix.lower()]
+        search_element = func(locator)
         return prefix, locator, search_element
 
-    def _get_js_coords(self, prefix, locator):
+    def _get_coordinates(self, prefix, locator):
         if prefix.lower() == 'xpath':
             locator = locator.replace('"', "'")
             cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
