@@ -34,7 +34,7 @@ class RobotEyes(object):
                 appiumlib = BuiltIn().get_library_instance('AppiumLibrary')
                 self.driver = appiumlib._current_application()
             except:
-                raise ValueError('Browser/App is not open')
+                raise Exception('Selenium or Appium instace not found')
 
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
