@@ -7,7 +7,7 @@ import platform
 from PIL import Image
 from robot.libraries.BuiltIn import BuiltIn
 
-from constants import *
+from .constants import *
 
 
 class RobotEyes(object):
