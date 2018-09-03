@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
-import sys, os
+import os
 
-version = '0.5'
+version = '0.55'
 
 setup(name='robotframework-eyes',
       version=version,
@@ -27,7 +27,4 @@ Visual regression library and report generator for robot framework. Capture elem
           'robotframework',
           'robotframework-selenium2library'
       ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
-      )
+)

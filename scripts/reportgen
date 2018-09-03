@@ -9,7 +9,7 @@ try:
     output_dir = sys.argv[1]
 
 except IndexError:
-    print "Assuming results stored in root.."
+    print("Assuming results stored in root..")
     output_dir = ''
 
 if output_dir.endswith('/') or not output_dir:
