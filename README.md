@@ -35,3 +35,11 @@ Imagemagick (for mac: brew install imagemagick, linux: apt-get install imagemagi
 
 To generate the report:
 **reportgen /path/to/output directory**
+
+# Keyword Documentation
+**open eyes** - Arguments: None - (Gets current selenium/appium instance) <br/>
+**capture full screen** - Arguments: tolerance (optional) - (Captures an entire page)<br/>
+**capture element** - Arguments: locator - (Captures a region or an individual element in a webpage)<br/>
+**capture mobile element** - Arguments: locator - (Captures a region or an individual element in a mobile screen)<br/>
+**scroll to element** - Arguments: locator - (Scrolls to an element in a webpage)<br/>
+**compare images** - Arguments: None - (Compares baseline and actual images of a testcase)<br/>
