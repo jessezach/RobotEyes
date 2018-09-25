@@ -29,12 +29,12 @@ class RobotEyes(object):
         try:
             s2l = BuiltIn().get_library_instance('Selenium2Library')
             self.driver = s2l._current_browser()
-        except:
+        except RuntimeError:
             try:
-                appiumlib = BuiltIn().get_library_instance('AppiumLibrary')
-                self.driver = appiumlib._current_application()
-            except:
-                raise Exception('Selenium or Appium instace not found')
+                s2l = BuiltIn().get_library_instance('SeleniumLibrary')
+                self.driver = s2l._current_browser()
+            except RuntimeError:
+                raise Exception('Selenium instance not found')
 
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
