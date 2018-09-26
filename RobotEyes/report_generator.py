@@ -13,9 +13,11 @@ def generate_report(root_folder, report_path, img_path):
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body>
     <h4 class="text-center">Visual test report</h4>
+    <div id="piechart"></div>
     <div class="container" style="position:relative;top:20px;">
     <table class="table table-striped table-hover" id="results">
     <thead>
@@ -107,6 +109,8 @@ def generate_report(root_folder, report_path, img_path):
     </div>
     <script>
         $(document).ready(function() {
+          var pass = 0;
+          var fail = 0;
           var t = 1;
           $("table#innerResults").each(function() {
             var $items = $(this).find('tbody tr');
@@ -119,10 +123,12 @@ def generate_report(root_folder, report_path, img_path):
             if(color == 'rgb(255, 0, 0)') {
               $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','red');
               t = t+2;
+              fail = fail + 1;
             }
             else  {
              $('table#results > tbody > tr:nth-child(' + t + ') > td:nth-child(2)').css('color','green');
              t = t+2;
+             pass = pass + 1;
             }
           });
           
@@ -134,6 +140,25 @@ def generate_report(root_folder, report_path, img_path):
             cls = $(this).find('i:first').attr("class").split(" ")[1];
             $(this).find('i:first').removeClass(cls).addClass(classes[cls]);
           });
+          
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(drawChart);
+
+          function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+              ['Status', 'Count'],
+              ['Pass', pass],
+              ['Fail', fail]
+            ]);
+            var options = {
+              slices: {
+                0: { color: '#2e8b57' },
+                1: { color: '#cd0000' },
+              }
+            };
+            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+            chart.draw(data, options);
+          }
         });
     </script>
     </body>
