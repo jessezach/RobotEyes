@@ -37,7 +37,7 @@ To generate the report:
 **reportgen /path/to/output directory**
 
 # Keyword Documentation
-**open eyes** - Arguments: None - (Gets current selenium/appium instance) <br/>
+**open eyes** - Arguments: library name. Eg AppiumLibrary (optional) - (Gets current selenium/appium instance) <br/>
 **capture full screen** - Arguments: tolerance (optional) - (Captures an entire page)<br/>
 **capture element** - Arguments: locator - (Captures a region or an individual element in a webpage)<br/>
 **capture mobile element** - Arguments: locator - (Captures a region or an individual element in a mobile screen)<br/>
