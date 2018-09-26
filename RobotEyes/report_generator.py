@@ -127,14 +127,12 @@ def generate_report(root_folder, report_path, img_path):
           });
           
           $("button").click(function () {
-            c = $(this).find('i:first').attr("class");
-            c = c.split(" ");
-            cls = c[1];
-            if (cls === "fa-arrow-right") {
-                $(this).find('i:first').removeClass(cls).addClass("fa-arrow-down");
-            } else {
-                $(this).find('i:first').removeClass(cls).addClass("fa-arrow-right");
+            classes = {
+                "fa-arrow-down": "fa-arrow-right",
+                "fa-arrow-right": "fa-arrow-down"
             }
+            cls = $(this).find('i:first').attr("class").split(" ")[1];
+            $(this).find('i:first').removeClass(cls).addClass(classes[cls]);
           });
         });
     </script>
