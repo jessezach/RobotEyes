@@ -14,12 +14,13 @@ def generate_report(root_folder, report_path, img_path):
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="http://code.highcharts.com/highcharts-3d.js"></script>
     </head>
     <body>
-    <h4 class="text-center">Visual test report</h4>
     <div id="piechart"></div>
     <div class="container" style="position:relative;top:20px;">
-    <table class="table table-striped table-hover" id="results">
+    <table class="table table-striped table-sm" id="results">
     <thead>
     <tr>
     <th></th>
@@ -141,24 +142,50 @@ def generate_report(root_folder, report_path, img_path):
             $(this).find('i:first').removeClass(cls).addClass(classes[cls]);
           });
           
-          google.charts.load('current', {'packages':['corechart']});
-          google.charts.setOnLoadCallback(drawChart);
-
-          function drawChart() {
-            var data = google.visualization.arrayToDataTable([
-              ['Status', 'Count'],
-              ['Pass', pass],
-              ['Fail', fail]
-            ]);
-            var options = {
-              slices: {
-                0: { color: '#2e8b57' },
-                1: { color: '#cd0000' },
-              }
-            };
-            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-            chart.draw(data, options);
-          }
+          Highcharts.chart('piechart', {
+            chart: {
+                type: 'pie',
+                options3d: {
+                    enabled: true,
+                    alpha: 45,
+                    beta: 0
+                }
+            },
+            title: {
+                text: 'Test result stats'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.y:.1f}</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    depth: 35,
+                    colors: ['#32CD32', '#B22222'],
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.y:.1f}',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Count',
+                colorByPoint: true,
+                data: [{
+                    name: 'Pass',
+                    y: pass,
+                    sliced: true,
+                    selected: true
+                }, {
+                    name: 'Fail',
+                    y: fail
+                }]
+            }]
+          });
         });
     </script>
     </body>
