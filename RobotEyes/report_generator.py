@@ -35,9 +35,9 @@ def generate_report(root_folder, report_path, img_path):
         test_name = t.get('name')
         folder_name = test_name.replace(' ', '_')
 
-        html += '''<tr>
+        html += '''<tr data-toggle="collapse" data-target='div[value="%s"]' class="accordion-toggle">
         <td>
-        <button data-toggle="collapse" data-target='div[value="%s"]' class="btn btn-default btn-sm accordion-toggle"><i class="fas fa-arrow-right"></i></button>
+        <button class="btn btn-default btn-sm"><i class="fas fa-arrow-right"></i></button>
         </td>
         <td>%s</td>
         </tr>
@@ -108,6 +108,11 @@ def generate_report(root_folder, report_path, img_path):
     </tbody>
     </table>
     </div>
+    <style>
+      tr.accordion-toggle:hover {
+        cursor:pointer;
+      }
+    </style>
     <script>
         $(document).ready(function() {
           var pass = 0;
@@ -133,7 +138,7 @@ def generate_report(root_folder, report_path, img_path):
             }
           });
           
-          $("button").click(function () {
+          $("tr.accordion-toggle").click(function () {
             classes = {
                 "fa-arrow-down": "fa-arrow-right",
                 "fa-arrow-right": "fa-arrow-down"
