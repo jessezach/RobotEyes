@@ -21,6 +21,6 @@ else:
     img_path = output_dir + '/visual_images'
 
 if os.path.exists(root_folder + "/" + report_path) and os.path.exists(root_folder + "/" + img_path):
-    report_generator.generate_report(root_folder, report_path, img_path)
+    report_generator.generate_report(root_folder, report_path, img_path, output_dir)
 else:
     raise Exception("Please provide a valid path to results.")
