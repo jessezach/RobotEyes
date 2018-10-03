@@ -197,7 +197,10 @@ def generate_report(root_folder, report_path, img_path, output_dir):
     </html>'''
 
     print("Creating visual report at %s/visualReport.html" % output_dir)
-    output = open(root_folder + '/' + output_dir + '/visualReport.html', 'w')
+    if output_dir == '':
+        output = open(root_folder + '/visualReport.html', 'w')
+    else:
+        output = open(root_folder + '/' + output_dir + '/visualReport.html', 'w')
     output.write(html)
     output.close()
 
