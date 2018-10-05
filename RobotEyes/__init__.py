@@ -3,8 +3,9 @@ import shutil
 import time
 import subprocess
 import platform
+import math
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
 
 from .constants import *
@@ -48,36 +49,14 @@ class RobotEyes(object):
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
 
-    def _delete_folder_if_exists(self, test_name_folder):
-        if self.mode.lower() == MODE_TEST:
-            if os.path.exists(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder):
-                shutil.rmtree(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder)
-
-            if os.path.exists(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder):
-                shutil.rmtree(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder)
-
-        elif self.mode.lower() == MODE_BASELINE:
-            if os.path.exists(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder):
-                shutil.rmtree(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder)
-
-        else:
-            raise AssertionError('Mode should be test or baseline')
-
-    def _create_empty_folder(self, test_name_folder):
-        if self.mode.lower() == MODE_BASELINE:
-            self.path = self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder
-
-        elif self.mode.lower() == MODE_TEST:
-            self.path = self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder
-
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-
-    def capture_full_screen(self, tolerance=None):
-        print('Capturing page...')
+    # Captures full screen
+    def capture_full_screen(self, tolerance=None, blur=[]):
         if not tolerance:
             tolerance = self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
+
+        if blur:
+            self._blur_regions(blur)
 
         if self.mode.lower() == MODE_TEST:
             output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
@@ -85,7 +64,11 @@ class RobotEyes(object):
             output.close()
         self.count += 1
 
-    def capture_mobile_element(self, selector):
+    # Captures a specific region in a mobile screen
+    def capture_mobile_element(self, selector, tolerance=None):
+        if not tolerance:
+            tolerance = self.tolerance
+
         prefix, locator, search_element = self._find_element(selector)
 
         location = search_element.location
@@ -97,29 +80,40 @@ class RobotEyes(object):
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
         image = Image.open(self.path + '/img' + str(self.count) + '.png')
-        image = image.crop((left, top, right, bottom))  # defines crop points
+        image = image.crop((left, top, right, bottom))
         image.save(self.path + '/img' + str(self.count) + '.png')
+
+        if self.mode.lower() == MODE_TEST:
+            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
+            output.write(str(tolerance))
+            output.close()
         self.count += 1
 
-    def capture_element(self, selector, tolerance=None):
+    # Captures a specific region in a webpage
+    def capture_element(self, selector, tolerance=None, blur=[]):
         if not tolerance:
             tolerance = self.tolerance
 
-        prefix, locator, search_element = self._find_element(selector)
+        prefix, locator, _ = self._find_element(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
+
         coord = self._get_coordinates(prefix, locator)
-        left = coord['left']
-        top = coord['top']
-        right = coord['right']
-        bottom = coord['bottom']
+        left = math.ceil(coord['left'])
+        top = math.ceil(coord['top'])
+        right = math.ceil(coord['right'])
+        bottom = math.ceil(coord['bottom'])
+
+        if blur:
+            self._blur_regions(blur)
 
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
 
         if self.sys.lower() == "darwin":
             im = im.crop((left + left, top + top, right + right, bottom + bottom))
         else:
-            im = im.crop((left, top, right, bottom))  # defines crop points
+            im = im.crop((left, top, right, bottom))
+
         im.save(self.path + '/img' + str(self.count) + '.png')
 
         if self.mode.lower() == MODE_TEST:
@@ -248,3 +242,54 @@ class RobotEyes(object):
                 .format(locator)
             coord = self.driver.execute_script(cmd)
         return coord
+
+    def _delete_folder_if_exists(self, test_name_folder):
+        if self.mode.lower() == MODE_TEST:
+            if os.path.exists(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder)
+
+            if os.path.exists(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + DIFF_IMAGE_BASE_FOLDER + test_name_folder)
+
+        elif self.mode.lower() == MODE_BASELINE:
+            if os.path.exists(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder):
+                shutil.rmtree(self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder)
+
+        else:
+            raise AssertionError('Mode should be test or baseline')
+
+    def _create_empty_folder(self, test_name_folder):
+        if self.mode.lower() == MODE_BASELINE:
+            self.path = self.images_base_folder + BASELINE_IMAGE_BASE_FOLDER + test_name_folder
+
+        elif self.mode.lower() == MODE_TEST:
+            self.path = self.images_base_folder + ACTUAL_IMAGE_BASE_FOLDER + test_name_folder
+
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
+    def _blur_regions(self, selectors):
+        for region in selectors:
+            prefix, locator, _ = self._find_element(region)
+            area_coordinates = self._get_coordinates(prefix, locator)
+
+            left = math.ceil(area_coordinates['left'])
+            top = math.ceil(area_coordinates['top'])
+            right = math.ceil(area_coordinates['right'])
+            bottom = math.ceil(area_coordinates['bottom'])
+
+            im = Image.open(self.path + '/img' + str(self.count) + '.png')
+
+            if self.sys.lower() == "darwin":
+                cropped_image = im.crop((left + left, top + top, right + right, bottom + bottom))
+            else:
+                cropped_image = im.crop((left, top, right, bottom))
+
+            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=50))
+
+            if self.sys.lower() == "darwin":
+                im.paste(blurred_image, (left + left, top + top, right + right, bottom + bottom))
+            else:
+                im.paste(blurred_image, (left, top, right, bottom))
+
+            im.save(self.path + '/img' + str(self.count) + '.png')
