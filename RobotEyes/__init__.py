@@ -50,13 +50,13 @@ class RobotEyes(object):
         self._create_empty_folder(test_name_folder)
 
     # Captures full screen
-    def capture_full_screen(self, tolerance=None, blur=[]):
+    def capture_full_screen(self, tolerance=None, blur=[], radius=50):
         if not tolerance:
             tolerance = self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
 
         if blur:
-            self._blur_regions(blur)
+            self._blur_regions(blur, radius)
 
         if self.mode.lower() == MODE_TEST:
             output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
@@ -90,7 +90,7 @@ class RobotEyes(object):
         self.count += 1
 
     # Captures a specific region in a webpage
-    def capture_element(self, selector, tolerance=None, blur=[]):
+    def capture_element(self, selector, tolerance=None, blur=[], radius=50):
         if not tolerance:
             tolerance = self.tolerance
 
@@ -105,7 +105,7 @@ class RobotEyes(object):
         bottom = math.ceil(coord['bottom'])
 
         if blur:
-            self._blur_regions(blur)
+            self._blur_regions(blur, radius)
 
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
 
@@ -268,7 +268,7 @@ class RobotEyes(object):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
-    def _blur_regions(self, selectors):
+    def _blur_regions(self, selectors, radius):
         for region in selectors:
             prefix, locator, _ = self._find_element(region)
             area_coordinates = self._get_coordinates(prefix, locator)
@@ -285,7 +285,7 @@ class RobotEyes(object):
             else:
                 cropped_image = im.crop((left, top, right, bottom))
 
-            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=50))
+            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=radius))
 
             if self.sys.lower() == "darwin":
                 im.paste(blurred_image, (left + left, top + top, right + right, bottom + bottom))
