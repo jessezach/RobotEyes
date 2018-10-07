@@ -269,6 +269,9 @@ class RobotEyes(object):
             os.makedirs(self.path)
 
     def _blur_regions(self, selectors, radius):
+        if not isinstance(selectors, list):
+            selectors = [selectors]
+
         for region in selectors:
             prefix, locator, _ = self._find_element(region)
             area_coordinates = self._get_coordinates(prefix, locator)
