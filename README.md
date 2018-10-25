@@ -29,7 +29,7 @@ Imagemagick (for mac: brew install imagemagick, linux: apt-get install imagemagi
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open eyes    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait until element is visible  id=lst-ib    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@{blur}  id=body  css=#SIvCob    <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen  0.05(tolerance to override global value, optional)  blur=@{blur}(regions to blur from image)   radius=50(thickness of the blur)  <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen  0.05(tolerance to override global value, optional)  blur=${blur}(regions to blur from image)   radius=50(thickness of the blur)  <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture element  id=hplogo    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare images    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close browser
