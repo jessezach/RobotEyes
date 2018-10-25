@@ -27,18 +27,23 @@ class RobotEyes(object):
         self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
         self.images_base_folder = self.output_dir + IMAGES_FOLDER
 
-        if lib:
-            s2l = BuiltIn().get_library_instance(lib)
-        else:
+        if lib=='AppiumLibrary':
+            appium = BuiltIn().get_library_instance('AppiumLibrary')
+            self.driver = appium._current_application()
+        elif lib=='SeleniumLibrary':
             try:
                 s2l = BuiltIn().get_library_instance('Selenium2Library')
+                self.driver = s2l._current_browser()
             except RuntimeError:
                 try:
                     s2l = BuiltIn().get_library_instance('SeleniumLibrary')
+                    self.driver = s2l._current_browser()
                 except RuntimeError:
                     raise Exception('Selenium instance not found')
-
-        self.driver = s2l._current_browser()
+        else:
+            s2l = BuiltIn().get_library_instance(lib)
+            self.driver = s2l._current_browser()
+            
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
         test_name_folder = self.test_name.replace(' ', '_')
