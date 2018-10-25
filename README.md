@@ -28,7 +28,8 @@ Imagemagick (for mac: brew install imagemagick, linux: apt-get install imagemagi
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open browser  https://www.google.com/  chrome     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maximize browser window    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open eyes    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait until element is visible  id=lst-ib    <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen  0.05(tolerance to override global value, optional)    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@{blur}  id=body  css=#SIvCob    <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture full screen  0.05(tolerance to override global value, optional)  blur=@{blur}(regions to blur from image)   radius=50(thickness of the blur)  <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;capture element  id=hplogo    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare images    <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close browser
@@ -38,8 +39,8 @@ To generate the report:
 
 # Keyword Documentation
 **open eyes** - Arguments: library name. Eg AppiumLibrary (optional) - (Gets current selenium/appium instance) <br/>
-**capture full screen** - Arguments: tolerance (optional) - (Captures an entire page)<br/>
-**capture element** - Arguments: locator - (Captures a region or an individual element in a webpage)<br/>
+**capture full screen** - Arguments: tolerance, blur(array of locators to blur, optional), radius(thickness of blur, optional) - (Captures an entire page)<br/>
+**capture element** - Arguments: locator, blur(array of locators to blur, optional), radius(thickness of blur, optional)(Captures a region or an individual element in a webpage)<br/>
 **capture mobile element** - Arguments: locator - (Captures a region or an individual element in a mobile screen)<br/>
 **scroll to element** - Arguments: locator - (Scrolls to an element in a webpage)<br/>
 **compare images** - Arguments: None - (Compares baseline and actual images of a testcase)<br/>
