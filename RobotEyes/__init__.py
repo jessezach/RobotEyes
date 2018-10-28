@@ -23,22 +23,21 @@ class RobotEyes(object):
         self.sys = platform.system()
         self.tolerance = tolerance
 
-    def open_eyes(self, lib=None):
+    def open_eyes(self, lib='Selenium2Library'):
         self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
         self.images_base_folder = self.output_dir + IMAGES_FOLDER
 
-        if lib:
+        try:
             s2l = BuiltIn().get_library_instance(lib)
-        else:
-            try:
-                s2l = BuiltIn().get_library_instance('Selenium2Library')
-            except RuntimeError:
-                try:
-                    s2l = BuiltIn().get_library_instance('SeleniumLibrary')
-                except RuntimeError:
-                    raise Exception('Selenium instance not found')
 
-        self.driver = s2l._current_browser()
+            if lib == 'AppiumLibrary':
+                self.driver = s2l._current_application()
+            else:
+                self.driver = s2l._current_browser()
+
+        except RuntimeError:
+            raise Exception('%s instance not found' % lib)
+
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         self.count = 1
         test_name_folder = self.test_name.replace(' ', '_')
