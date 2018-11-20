@@ -49,6 +49,11 @@ class RobotEyes(object):
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
 
+        # Delete visualReport.html if modified_at is older than a specified time difference.
+        # Couldn't think of a better way to do this.
+        # New report gets appended to old test run report if this is not done.
+        self._delete_report_if_old(self.output_dir + REPORT_FILE) if os.path.exists(self.output_dir + REPORT_FILE) else ''
+
         if not os.path.exists(self.output_dir + REPORT_FILE):
             file = open(self.output_dir + REPORT_FILE, 'w')
             file.write(HEADER)
@@ -303,3 +308,9 @@ class RobotEyes(object):
             img = Image.open(arg)
             img = img.resize((1024, 1024), Image.ANTIALIAS)
             img.save(arg)
+
+    def _delete_report_if_old(self, path):
+        t1 = os.path.getmtime(path)
+        t2 = time.time()
+        diff = int(t2 - t1)
+        os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
