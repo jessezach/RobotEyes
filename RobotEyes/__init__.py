@@ -190,26 +190,8 @@ class RobotEyes(object):
             BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if fail else ''
 
     def _compare(self, b_path, a_path, d_path):
-        im = Image.open(b_path)
-        b_width, b_height = im.size
-        im.close()
-
-        im = Image.open(a_path)
-        a_width, a_height = im.size
-        im.close()
-
-        b_area = int(b_width) * int(b_height)
-        a_area = int(a_width) * int(a_height)
-
-        large_image = a_path
-        small_image = b_path
-
-        if b_area > a_area:
-            large_image = b_path
-            small_image = a_path
-
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                      % (large_image, small_image, d_path)
+                      % (a_path, b_path, d_path)
 
         proc = subprocess.Popen(compare_cmd,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
