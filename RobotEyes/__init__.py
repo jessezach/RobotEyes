@@ -9,6 +9,7 @@ from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
 
 from .constants import *
+from .report_utils import *
 
 
 class RobotEyes(object):
@@ -22,6 +23,7 @@ class RobotEyes(object):
         self.mode = mode
         self.sys = platform.system()
         self.tolerance = tolerance
+        self.stats = {}
 
     def open_eyes(self, lib='Selenium2Library'):
         self.output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
@@ -48,25 +50,35 @@ class RobotEyes(object):
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
 
+        # Delete visualReport.html if modified_at is older than a specified time difference.
+        # Couldn't think of a better way to do this.
+        # New report gets appended to old test run report if this is not done.
+        self._delete_report_if_old(self.output_dir + REPORT_FILE) if os.path.exists(self.output_dir + REPORT_FILE) else ''
+
+        if not os.path.exists(self.output_dir + REPORT_FILE):
+            file = open(self.output_dir + REPORT_FILE, 'w')
+            file.write(HEADER)
+            file.close()
+
+        with open(self.output_dir + REPORT_FILE, 'r') as file:
+            content = file.read()
+            self.content = content.replace(FOOTER, '')
+
     # Captures full screen
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
-        if not tolerance:
-            tolerance = self.tolerance
+        tolerance = tolerance if tolerance else self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
 
-        if blur:
-            self._blur_regions(blur, radius)
+        self._blur_regions(blur, radius) if blur else ''
 
         if self.mode.lower() == MODE_TEST:
-            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
-            output.write(str(tolerance))
-            output.close()
+            key = 'img' + str(self.count) + '.png'
+            self.stats[key] = tolerance
         self.count += 1
 
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None):
-        if not tolerance:
-            tolerance = self.tolerance
+        tolerance = tolerance if tolerance else self.tolerance
 
         prefix, locator, search_element = self._find_element(selector)
 
@@ -83,15 +95,13 @@ class RobotEyes(object):
         image.save(self.path + '/img' + str(self.count) + '.png')
 
         if self.mode.lower() == MODE_TEST:
-            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
-            output.write(str(tolerance))
-            output.close()
+            key = 'img' + str(self.count) + '.png'
+            self.stats[key] = tolerance
         self.count += 1
 
     # Captures a specific region in a webpage
     def capture_element(self, selector, tolerance=None, blur=[], radius=50):
-        if not tolerance:
-            tolerance = self.tolerance
+        tolerance = tolerance if tolerance else self.tolerance
 
         prefix, locator, _ = self._find_element(selector)
         time.sleep(1)
@@ -103,8 +113,7 @@ class RobotEyes(object):
         right = math.ceil(coord['right'])
         bottom = math.ceil(coord['bottom'])
 
-        if blur:
-            self._blur_regions(blur, radius)
+        self._blur_regions(blur, radius) if blur else ''
 
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
 
@@ -116,9 +125,8 @@ class RobotEyes(object):
         im.save(self.path + '/img' + str(self.count) + '.png')
 
         if self.mode.lower() == MODE_TEST:
-            output = open(self.path + '/img' + str(self.count) + '.png.txt', 'w')
-            output.write(str(tolerance))
-            output.close()
+            key = 'img' + str(self.count) + '.png'
+            self.stats[key] = tolerance
         self.count += 1
 
     def scroll_to_element(self, selector):
@@ -135,6 +143,9 @@ class RobotEyes(object):
             if not os.path.exists(diff_path):
                 os.makedirs(diff_path)
 
+            fail = False
+            self.content += make_parent_row(self.test_name)
+
             # compare actual and baseline images and save the diff image
             for filename in os.listdir(actual_path):
                 a_path = ''
@@ -147,14 +158,14 @@ class RobotEyes(object):
                     d_path = diff_path + '/' + filename
 
                     if os.path.exists(b_path):
+                        self._resize(b_path, a_path)
                         difference = self._compare(b_path, a_path, d_path)
-                        fname = open(actual_path + '/' + filename + '.txt', 'r')
-                        threshold = float(fname.readline())
-                        fname.close()
+                        threshold = float(self.stats[filename])
 
                         if difference > threshold:
                             color = 'red'
                             result = '%s<%s' % (threshold, difference)
+                            fail = True
 
                         elif difference == threshold:
                             color = 'green'
@@ -165,40 +176,38 @@ class RobotEyes(object):
                             result = '%s>%s' % (threshold, difference)
 
                         text = '%s %s' % (result, color)
+                        final_result = [color, result]
 
                         output = open(actual_path + '/' + filename + '.txt', 'w')
                         output.write(text)
                         output.close()
+
+                        self.content += make_image_row(b_path, a_path, d_path, final_result)
                     else:
                         raise Exception('Baseline image does not exist for %s in test %s' % (filename, test_name))
 
+            self.content += INNER_TABLE_END
+            self.content += FOOTER
+
+            file = open(self.output_dir + REPORT_FILE, 'w')
+            file.write(self.content)
+            file.close()
+
+            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if fail else ''
+
     def _compare(self, b_path, a_path, d_path):
-        im = Image.open(b_path)
-        b_width, b_height = im.size
-        im.close()
-
-        im = Image.open(a_path)
-        a_width, a_height = im.size
-        im.close()
-
-        b_area = int(b_width) * int(b_height)
-        a_area = int(a_width) * int(a_height)
-        
-        large_image = a_path
-        small_image = b_path
-        
-        if b_area > a_area:
-            large_image = b_path
-            small_image = a_path
-            
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
-                      % (large_image, small_image, d_path)
+                      % (a_path, b_path, d_path)
 
         proc = subprocess.Popen(compare_cmd,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, err = proc.communicate()
         print(err)
-        return float(err.split()[1][1:-1])
+        diff = err.split()[1][1:-1]
+
+        if len(diff) >= 4:
+            diff = diff[0:4]
+        return float(diff)
 
     def _find_element(self, selector):
         if selector.startswith('//'):
@@ -218,7 +227,7 @@ class RobotEyes(object):
         }
         if prefix.lower() not in dict:
             raise Exception('Please add a valid locator prefix. Eg xpath, css, class.')
-            
+
         func = dict[prefix.lower()]
         search_element = func(locator)
         return prefix, locator, search_element
@@ -268,8 +277,7 @@ class RobotEyes(object):
             os.makedirs(self.path)
 
     def _blur_regions(self, selectors, radius):
-        if not isinstance(selectors, list):
-            selectors = [selectors]
+        selectors = selectors if isinstance(selectors, list) else [selectors]
 
         for region in selectors:
             prefix, locator, _ = self._find_element(region)
@@ -295,3 +303,15 @@ class RobotEyes(object):
                 im.paste(blurred_image, (left, top, right, bottom))
 
             im.save(self.path + '/img' + str(self.count) + '.png')
+
+    def _resize(self, *args):
+        for arg in args:
+            img = Image.open(arg)
+            img = img.resize((1024, 1024), Image.ANTIALIAS)
+            img.save(arg)
+
+    def _delete_report_if_old(self, path):
+        t1 = os.path.getmtime(path)
+        t2 = time.time()
+        diff = int(t2 - t1)
+        os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
