@@ -44,3 +44,4 @@ Report should get generated after test have finished. To generate report manuall
 
 # Note: 
 If you find this library useful, please do star the repository. 
+For any issue, feature request or clarification feel free to raise an issue in github or email me at iamjess988@gmail.com
