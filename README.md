@@ -42,4 +42,5 @@ Report should get generated after test have finished. To generate report manuall
 **scroll to element** - Arguments: locator - (Scrolls to an element in a webpage)<br/>
 **compare images** - Arguments: None - (Compares baseline and actual images of a testcase)<br/>
 
-**Note**: If you find this library useful, please do star the repository. 
+# Note: 
+If you find this library useful, please do star the repository. 
