@@ -41,3 +41,5 @@ Report should get generated after test have finished. To generate report manuall
 **capture mobile element** - Arguments: locator - (Captures a region or an individual element in a mobile screen)<br/>
 **scroll to element** - Arguments: locator - (Scrolls to an element in a webpage)<br/>
 **compare images** - Arguments: None - (Compares baseline and actual images of a testcase)<br/>
+
+**Note**: If you find this library useful, please do star the repository. 
