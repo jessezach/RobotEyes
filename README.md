@@ -24,7 +24,7 @@ Uses Imagemagick to compare images and create a diff image. Custom Report to vie
 - Install `Imagemagick` (for mac: `brew install imagemagick`, linux: `apt-get install imagemagick`) <br/>
 
 # Example
-```{robotframework}
+```
 *** Settings ***
 Library    Selenium2Library
 Library    RobotEyes    test   0.01
@@ -32,7 +32,7 @@ Library    RobotEyes    test   0.01
 # The 3rd argument is the global test tolerance (optional)
 
 *** Variables ***
-@{blur}  id=body  css=#SIvCob
+@{blur}    id=body    css=#SIvCob
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
