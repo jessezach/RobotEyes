@@ -25,6 +25,7 @@ class RobotEyes(object):
         self.tolerance = tolerance
         self.stats = {}
         self.content = ''
+        self.fail = False
 
     def open_eyes(self, lib='Selenium2Library'):
         self.output_dir = self._output_dir()
@@ -83,6 +84,7 @@ class RobotEyes(object):
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
+
         image = Image.open(self.path + '/img' + str(self.count) + '.png')
         image = image.crop((left, top, right, bottom))
         image.save(self.path + '/img' + str(self.count) + '.png')
@@ -136,7 +138,6 @@ class RobotEyes(object):
             if not os.path.exists(diff_path):
                 os.makedirs(diff_path)
 
-            fail = False
             self.content += make_parent_row(self.test_name)
 
             # compare actual and baseline images and save the diff image
@@ -152,21 +153,12 @@ class RobotEyes(object):
 
                     if os.path.exists(b_path):
                         self._resize(b_path, a_path)
+
                         difference = self._compare(b_path, a_path, d_path)
+
                         threshold = float(self.stats[filename])
 
-                        if difference > threshold:
-                            color = 'red'
-                            result = '%s<%s' % (threshold, difference)
-                            fail = True
-
-                        elif difference == threshold:
-                            color = 'green'
-                            result = '%s==%s' % (threshold, difference)
-
-                        else:
-                            color = 'green'
-                            result = '%s>%s' % (threshold, difference)
+                        color, result = self._get_result(difference, threshold)
 
                         text = '%s %s' % (result, color)
                         final_result = [color, result]
@@ -182,19 +174,9 @@ class RobotEyes(object):
             self.content += INNER_TABLE_END
             self.content += FOOTER
 
-            if os.path.exists(self.report_path):
-                with open(self.report_path, 'r') as file:
-                    old_content = file.read()
-                    old_content = old_content.replace(FOOTER, '')
-                    self.content = old_content + self.content
-            else:
-                self.content = HEADER + self.content
+            self._write_to_report()
 
-            file = open(self.report_path, 'w')
-            file.write(self.content)
-            file.close()
-
-            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if fail else ''
+            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
@@ -327,3 +309,32 @@ class RobotEyes(object):
             index = output_dir.find('/pabot_results')
             return output_dir[:index]
         return output_dir
+
+    def _get_result(self, difference, threshold):
+        if difference > threshold:
+            color = 'red'
+            result = '%s<%s' % (threshold, difference)
+            self.fail = True
+
+        elif difference == threshold:
+            color = 'green'
+            result = '%s==%s' % (threshold, difference)
+
+        else:
+            color = 'green'
+            result = '%s>%s' % (threshold, difference)
+
+        return color, result
+
+    def _write_to_report(self):
+        if os.path.exists(self.report_path):
+            with open(self.report_path, 'r') as file:
+                old_content = file.read()
+                old_content = old_content.replace(FOOTER, '')
+                self.content = old_content + self.content
+        else:
+            self.content = HEADER + self.content
+
+        file = open(self.report_path, 'w')
+        file.write(self.content)
+        file.close()
