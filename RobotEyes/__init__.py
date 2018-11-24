@@ -295,7 +295,7 @@ class RobotEyes(object):
             else:
                 cropped_image = im.crop((left, top, right, bottom))
 
-            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=radius))
+            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=float(radius)))
 
             if self.sys.lower() == "darwin":
                 im.paste(blurred_image, (left + left, top + top, right + right, bottom + bottom))
