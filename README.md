@@ -1,4 +1,7 @@
 # RobotEyes
+[![Downloads](https://pepy.tech/badge/robotframework-eyes)](https://pepy.tech/project/robotframework-eyes)
+[![Version](https://img.shields.io/pypi/v/robotframework-eyes.svg)](https://pypi.org/project/robotframework-eyes)<br/>
+
 Visual Regression Library for Robot Framework
 
 Uses Imagemagick to compare images and create a diff image. Custom Report to view baseline, actual and diff images. View passed and failed tests. Blur regions (only for selenium) within a page to ignore comparison (helpful when there are dynamic elements like text etc in a page). Support SeleniumLibrary(tested) , Selenium2Library(tested) and AppiumLibrary(not tested).
@@ -51,6 +54,9 @@ The report should get generated after test have finished. To generate report man
 ```
     reportgen path/to/output directory
 ```
+# Pabot users
+Visual tests can be parallel executed using pabot . However there may be issues with the auto generated report after tests have finished.
+A workaround can be to generate report using **reportgen** to ensure report has no discrepancies.
 
 # Keyword Documentation
 **open eyes** - Arguments: library Eg AppiumLibrary (optional) - (Gets current selenium/appium instance) <br/>
