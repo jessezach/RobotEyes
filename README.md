@@ -51,6 +51,9 @@ The report should get generated after test have finished. To generate report man
 ```
     reportgen path/to/output directory
 ```
+# Pabot users
+Visual tests can be parallel executed using pabot . However there may be issues with the auto generated report after tests have finished.
+A workaround can be to generate report using **reportgen** to ensure report has no discrepancies.
 
 # Keyword Documentation
 **open eyes** - Arguments: library Eg AppiumLibrary (optional) - (Gets current selenium/appium instance) <br/>
