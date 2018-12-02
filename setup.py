@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import os
+import sys
 
 version = '0.62'
 
@@ -17,7 +18,7 @@ Visual regression library and report generator for robot framework. Capture elem
       author='Jesse Zacharias',
       author_email='iamjess988@gmail.com',
       url='https://github.com/jz-jess/RobotEyes',
-      scripts=[os.path.join('scripts', 'reportgen')],
+      # scripts=[os.path.join('scripts', 'reportgen')],
       license='MIT',
       packages=find_packages(),
       include_package_data=True,
@@ -25,6 +26,12 @@ Visual regression library and report generator for robot framework. Capture elem
       install_requires=[
           'pillow',
           'robotframework',
-          'robotframework-selenium2library'
+          'robotframework-selenium2library',
+          'flask'
       ],
+      entry_points={
+          'console_scripts': [
+              'eyes = RobotEyes.runner:main',
+          ]
+      },
 )
