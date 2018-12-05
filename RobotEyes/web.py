@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect
+from flask import Flask, render_template, flash, redirect, url_for
 from gevent import pywsgi
 import shutil
 import os
@@ -8,6 +8,11 @@ app = Flask(__name__, static_url_path="", static_folder=os.getcwd(), template_fo
 app.debug = True
 
 app.secret_key = 'jevjebvjbdf'
+
+
+def overview():
+    pass
+
 
 @app.route("/")
 def report():
@@ -67,7 +72,7 @@ def make_all_baseline():
             shutil.copytree(abs_directory, b_directory)
 
     flash('Successfully moved all images.')
-    return redirect('/')
+    return redirect(url_for('report'))
 
 
 @app.after_request
