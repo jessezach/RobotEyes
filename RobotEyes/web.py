@@ -10,11 +10,43 @@ app.debug = True
 app.secret_key = 'jevjebvjbdf'
 
 
-def overview():
-    pass
-
-
 @app.route("/")
+def overview():
+    actual_path = os.path.join(results, 'visual_images', 'actual')
+    passed = 0
+    failed = 0
+
+    if os.path.exists(actual_path):
+        for directory in os.listdir(os.path.join(actual_path)):
+            abs_directory = os.path.join(actual_path, directory)
+
+            if os.path.isdir(abs_directory):
+                last_found = ''
+
+                for file in os.listdir(abs_directory):
+                    if file.endswith('.txt'):
+                        f = os.path.join(abs_directory, file)
+
+                        obj = open(f, 'r')
+                        first_line = obj.readline().strip()
+                        arr = first_line.split()
+                        obj.close()
+                        color = arr[1]
+
+                        if color == 'red':
+                            failed += 1
+                            break
+
+                        elif color == 'green':
+                            last_found = 'green'
+                else:
+                    if last_found == 'green':
+                        passed += 1
+
+    return render_template('overview.html', passed=passed, failed=failed, total=(passed+failed))
+
+
+@app.route("/all")
 def report():
     baseline_path = os.path.join(results, 'visual_images', 'baseline')
     actual_path = os.path.join(results, 'visual_images', 'actual')

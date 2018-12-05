@@ -103,50 +103,6 @@
         $(this).find('i:first').removeClass(cls).addClass(classes[cls]);
       });
 
-      Highcharts.chart('piechart', {
-        chart: {
-            type: 'pie',
-            options3d: {
-                enabled: true,
-                alpha: 45,
-                beta: 0
-            }
-        },
-        title: {
-            text: 'Test result stats'
-        },
-        tooltip: {
-            pointFormat: '{series.name}: <b>{point.y:.1f}</b>'
-        },
-        plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                cursor: 'pointer',
-                depth: 35,
-                colors: ['#32CD32', '#B22222'],
-                dataLabels: {
-                    enabled: true,
-                    format: '<b>{point.name}</b>: {point.y:.1f}',
-                    style: {
-                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                    }
-                }
-            }
-        },
-        series: [{
-            name: 'Count',
-            colorByPoint: true,
-            data: [{
-                name: 'Pass',
-                y: pass,
-                sliced: true,
-                selected: true
-            }, {
-                name: 'Fail',
-                y: fail
-            }]
-        }]
-      });
     });
 </script>
 {% endblock %}
