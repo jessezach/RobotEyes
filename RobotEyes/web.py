@@ -7,7 +7,7 @@ app = Flask(__name__, static_url_path="", static_folder=os.getcwd(), template_fo
 
 app.debug = True
 
-app.secret_key = 'jevjebvjbdf'
+app.secret_key = 'somerandomkey'
 
 
 @app.route("/")
