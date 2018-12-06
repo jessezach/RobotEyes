@@ -5,13 +5,13 @@
 Visual Regression Library for Robot Framework
 
 Uses Imagemagick to compare images and create a diff image. Custom Report to view baseline, actual and diff images. View passed and failed tests. Blur regions (only for selenium) within a page to ignore comparison (helpful when there are dynamic elements like text etc in a page). Support SeleniumLibrary(tested) , Selenium2Library(tested) and AppiumLibrary(not tested).
-# Requirements
+## Requirements
 - Install the `robotframework-eyes` library using `pip`: 
 ```
     pip install robotframework-eyes
 ```     
 - Install `Imagemagick` (for mac: `brew install imagemagick`, linux: `apt-get install imagemagick`) <br/>
-# Quick-reference Usage Guide
+## Quick-reference Usage Guide
 - Import the Library into your Robot test. Pass Mode `test` or `baseline` as an argument. E.g: <br/>    
  ```
     Library    RobotEyes    test
@@ -24,11 +24,36 @@ Uses Imagemagick to compare images and create a diff image. Custom Report to vie
     reportgen results
 ``` 
 - A custom report will be generated within the specified results folder (or root). 
-# Usage Guide
+## Usage Guide
 This guide contains the suggested steps to efficently integrate `RobotEyes` library into your Robot Framework test development workflow.<br/>
 It also serves as documentation to clarify how this library functions on a high level.
 
-## Directory structure  
+## Keyword Documentation
+- `open eyes`:<br/>
+Arguments: library. E.g. AppiumLibrary (optional).<br/> 
+Gets current selenium/appium instance.<br/>
+
+- `capture full screen`:<br/>
+Arguments: tolerance, blur (array of locators to blur, optional), radius(thickness of blur, optional).<br/>
+Captures the entire screen.<br/>
+
+- `capture element`:<br/>
+Arguments: locator, blur(array of locators to blur, optional), radius(thickness of blur, optional).<br/>
+Captures a region or an individual element in a webpage.<br/>
+
+- `capture mobile element`:<br/>
+Arguments: locator.<br/>
+Captures a region or an individual element in a mobile screen.<br/>
+
+- `scroll to element`:<br/>
+Arguments: locator.<br/>
+Scrolls to an element in a webpage.<br/>
+
+- `compare images`:<br/>
+Arguments: None<br/>
+Compares **all** the `actual` images of a test case against the `baseline` images<br/>
+
+### Directory structure  
 The `RobotEyes` library creates a `visual_images` directory which will contain three additional directories, named `baseline`, `actual` & `diff`, respectively.<br/>
 These directories are necessary for the library to function and are created by it at different stages of the test case (TC) development workflow.<br/>
 The resulting directory structure created in the project looks as follows:
@@ -102,7 +127,7 @@ The resulting directory structure created in the project looks as follows:
   </ul>  
 </div>
 
-## Generating the baseline images
+### Generating the baseline images
 To generate the `baseline` images against which the `actual` images will be compared, the following lines of code need to be in the Robot Framework TC file:
 - Library declaration:
 ```robotframework
@@ -134,7 +159,7 @@ This image will be used to compare while in `test` mode (instead of `baseline` m
 If more "capture" keywords are in the TC, the quantity and name of the `baseline` images will increase accordingly (i.e. `img1.png`, `img2.png`, ... `imgN.png`).<br/>
 If the TC is executed again in `baseline` mode, the `baseline` images will be recaptured and those will overwrite the previous ones.<br/>
 
-## Generating the actual images
+### Generating the actual images
 Similarly, to generate the `actual` images, the following needs to exist in the code:
 - Library declaration:
 ```robotframework
@@ -164,7 +189,7 @@ Notice that the only difference is that the library declaration argument changed
 If the TC above is executed, the library will use the same capture keyword to generate the `actual` image, which will also be named `img1.png`.<br/>
 Here, more capture keywords also mean more images in the `actual` directory.
 
-## Comparing the images
+### Comparing the images
 To compare the images, the following needs to exist in the TC's code:
 - Library declaration:
 ```robotframework
@@ -201,7 +226,7 @@ To generate visual report manually, run:<br/>
     reportgen path/to/output directory
 ```
 
-# Another test example
+### Another test example
 ```robotframework
 *** Settings ***
 Library    Selenium2Library
@@ -226,18 +251,10 @@ Sample visual regression test case  # Name of the example test case
     close browser
 ```
 
-# Pabot users
+## Pabot users
 Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
-A workaround can be to generate the report using **reportgen** to ensure it has no discrepancies.
+A workaround can be to generate the report using `reportgen` to ensure it has no discrepancies.
 
-# Keyword Documentation
-**open eyes** - Arguments: library Eg AppiumLibrary (optional) - (Gets current selenium/appium instance) <br/>
-**capture full screen** - Arguments: tolerance, blur (array of locators to blur, optional), radius(thickness of blur, optional) - (Captures an entire page)<br/>
-**capture element** - Arguments: locator, blur(array of locators to blur, optional), radius(thickness of blur, optional)(Captures a region or an individual element in a webpage)<br/>
-**capture mobile element** - Arguments: locator - (Captures a region or an individual element in a mobile screen)<br/>
-**scroll to element** - Arguments: locator - (Scrolls to an element in a webpage)<br/>
-**compare images** - Arguments: None - (Compares baseline and actual images of a testcase)<br/>
-
-# Note: 
-If you find this library useful, please do star the repository. 
+## Note
+If you find this library useful, please do star the repository.<br/> 
 For any issue, feature request or clarification feel free to raise an issue in github or email me at iamjess988@gmail.com
