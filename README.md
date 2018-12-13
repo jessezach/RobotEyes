@@ -1,6 +1,7 @@
 # RobotEyes
 [![Downloads](https://pepy.tech/badge/robotframework-eyes)](https://pepy.tech/project/robotframework-eyes)
-[![Version](https://img.shields.io/pypi/v/robotframework-eyes.svg)](https://pypi.org/project/robotframework-eyes)<br/>
+[![Version](https://img.shields.io/pypi/v/robotframework-eyes.svg)](https://pypi.org/project/robotframework-eyes)
+[![HitCount](http://hits.dwyl.io/jz-jess/RobotEyes.svg)](http://hits.dwyl.io/jz-jess/RobotEyes)<br/>
 
 Visual Regression Library for Robot Framework
 
