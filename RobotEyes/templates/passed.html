@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="tabcontent" id="suiteMetrics" style="position:relative;left:235px;width:80%">
+    <h4><b><i class="fa fa-table"></i> Passed Tests</b></h4>
+    <hr/>
+
+    <form id="frm-example" action="/path/to/your/script.php" method="POST">
+        <p>
+            <button class="btn btn-primary active inner">Baseline Selected Images</button>
+        </p>
+        <table id="example" class="display" cellspacing="0" width="100%">
+            <thead>
+            <tr>
+            <tr>
+                <th></th>
+                <th>Test Case</th>
+                <th>Status</th>
+                <th>Images</th>
+            </tr>
+            </tr>
+            </thead>
+            <tbody>
+            {% for k, v in passed.items() %}
+            <tr>
+                <td></td>
+                <td>{{ k }}</td>
+                <td>Passed</td>
+                <td><a href="/{{ v }}">View Images</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+<script>
+$(document).ready(function() {
+   var table = $('#example').DataTable({
+      'columnDefs': [
+         {
+            'targets': 0,
+            'checkboxes': {
+               'selectRow': false
+            }
+         }
+      ],
+      'select': {
+         'style': 'multi'
+      },
+      'order': [[1, 'asc']]
+   });
+
+   // Handle form submission event
+   $('#frm-example').on('submit', function(e){
+      var form = this;
+
+      var rows_selected = table.column(0).checkboxes.selected();
+
+      // Iterate over all selected checkboxes
+      $.each(rows_selected, function(index, rowId){
+         // Create a hidden element
+         $(form).append(
+             $('<input>')
+                .attr('type', 'hidden')
+                .attr('name', 'id[]')
+                .val(rowId)
+         );
+      });
+
+   });
+});
+</script>
+{% endblock %}

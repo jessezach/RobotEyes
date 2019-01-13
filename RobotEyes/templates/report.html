@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block body %}
-<div id="piechart"></div>
-<div class="container" style="position:relative;top:20px;">
+<a href="/" class="btn btn-outline-secondary" style="position:absolute;left:80px;top:10px;">Home</a>
+
+<div class="container" style="position:relative;top:100px;">
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     <div class="alert alert-success" role="alert">

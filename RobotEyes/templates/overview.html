@@ -1,79 +1,50 @@
 {% extends "base.html" %}
 
 {% block body %}
-<div class="container">
-    <div id="piechart"></div>
-    <table class="table table-striped table-sm" id="results">
-        <thead>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Failed</td>
-                <td>
-                    <a href="/failed">{{ failed }}</a>
-                </td>
-            </tr>
-            <tr>
-                <td>Passed</td>
-                <td>
-                    <a href="/passed">{{ passed }}</a>
-                </td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td>
-                    <a href="/all">{{ total }}</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<div class="col-md-9 ml-sm-auto col-lg-10 px-4" role="main">
+    <div class="tabcontent" id="dashboard">
+        <div class="d-flex flex-column flex-md-row align-items-center p-1 mb-3 bg-light border-bottom shadow-sm">
+            <h5 class="my-0 mr-md-auto font-weight-normal"><i class="fa fa-dashboard"></i> Dashboard</h5>
+            <nav class="my-2 my-md-0 mr-md-3" style="color:red">
+            </nav>
+        </div>
+        <div class="row">
+            <div class="col-md-4"><a class="tile tile-info">{{total}}<p style="font-size:14px">Total Tests</p></a></div>
+            <div class="col-md-4"><a class="tile tile-pass">{{passed}}<p style="font-size:14px">Passed Tests</p></a></div>
+            <div class="col-md-4"><a class="tile tile-fail">{{failed}}<p style="font-size:14px">Failed Tests</p></a></div>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-md-12" style="background-color:white;height:400px;width:auto;">
+                <span style="font-weight:bold;font-size:24px">Test Status:</span>
+                <div id="piechart" style="height:370px;width:auto;"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12" style="height:25px;width:auto;">
+                <p class="text-muted" style="text-align:center;font-size:9px">Robot Eyes</p>
+            </div>
+        </div>
+    </div>
 </div>
-<script>
-    $(document).ready(function() {
-        Highcharts.chart('piechart', {
-            chart: {
-                type: 'pie',
-                options3d: {
-                    enabled: true,
-                    alpha: 45,
-                    beta: 0
-                }
-            },
-            title: {
-                text: 'Test result stats'
-            },
-            tooltip: {
-                pointFormat: '{series.name}: <b>{point.y:.1f}</b>'
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    depth: 35,
-                    colors: ['#4caf50', '#d50000'],
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.y:.1f}',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: 'Count',
-                colorByPoint: true,
-                data: [{
-                    name: 'Pass',
-                    y: {{ passed }},
-                    sliced: true,
-                    selected: true
-                }, {
-                    name: 'Fail',
-                    y: {{ failed }}
-                }]
-            }]
-        });
-    });
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {packages: ['corechart']});
+    google.charts.setOnLoadCallback(drawStuff);
+
+    function drawStuff() {
+        var data = google.visualization.arrayToDataTable([['Status', 'Percentage'], ['PASS',parseInt({{passed}})],['FAIL',parseInt({{failed}})]]);
+
+        var options = {
+            pieHole: 0.6,
+            legend: 'none',
+            chartArea: {width: "95%",height: "90%"},
+            colors: ['green', 'red'],
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById("piechart"));
+        chart.draw(data, options);
+    }
 </script>
 {% endblock %}
