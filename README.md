@@ -252,10 +252,19 @@ Sample visual regression test case  # Name of the example test case
     compare images
     close browser
 ```
+## Interactive Report
+Robot Eyes generates a report automatically after all tests have been executed. However a more interactive and intuitive flask based report is available. To use this report, run below command:</br>
+Simple usage: `eyes --results <results folder>`</br>
+Advanced usage:
+`eyes --results <path/to/results/folder> --host <localhost> --port <5000>`
 
 ## Pabot users
 Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
 A workaround can be to generate the report using `reportgen` to ensure it has no discrepancies.
+
+## Contributors:
+[Adirala Shiva](https://github.com/adiralashiva8) Contributed in creating a robotmetrics inspired reporting for RobotEyes.</br>
+[DiegoSanchezE](https://github.com/DiegoSanchezE) Added major improvements in the ReadMe.
 
 ## Note
 If you find this library useful, please do star the repository.<br/> 
