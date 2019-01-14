@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+{% for key, value in data.items() %}
+<div class="tabcontent" id="test" style="position:relative;left:235px;width:80%">
+    <div class="alert alert-success" role="alert" id="success" style="display:none;">
+        Success
+    </div>
+    <div class="alert alert-danger" role="alert" id="failed" style="display:none;">
+        Error
+    </div>
+    <h4><b><i class="fa fa-table"></i> {{ key }}</b></h4>
+    <hr/>
+    <p>
+        <button id="baseline" class="btn btn-primary active inner">Baseline Selected Images</button>
+    </p>
+    <table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+        <tr>
+            <th><input type="checkbox" name="select_all" value="1" id="select-all"></th>
+            <th>Baseline</th>
+            <th>Actual</th>
+            <th>Diff</th>
+            <th>Value</th>
+        </tr>
+        </tr>
+        </thead>
+        <tbody>
+        {% for test in value %}
+        <tr>
+            <td><input type="checkbox" name="{{ test[1] }}" value="2"></td>
+            <td>
+                <a href="{{ test[0] }}" target="_blank">
+                    <img src="{{ test[0] }}" height="200">
+                </a>
+            </td>
+            <td>
+                <a href="{{ test[1] }}" target="_blank">
+                    <img src="{{ test[1] }}" height="200">
+                </a>
+            </td>
+            <td>
+                <a href="{{ test[2] }}" target="_blank">
+                    <img src="{{ test[2] }}" height="200">
+                </a>
+            </td>
+            <td style="color:{{ test[3] }}">{{ test[4] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endfor %}
+<script>
+$(document).ready(function() {
+   var table = $('#example').DataTable({
+	"columnDefs": [ {
+	"targets": 0,
+	"orderable": false
+	} ],
+      'order': [[1, 'asc']]
+   });
+
+    $('#select-all').on('click', function(){
+      // Get all rows with search applied
+      var rows = table.rows({ 'search': 'applied' }).nodes();
+      // Check/uncheck checkboxes for all rows in the table
+      $('input[type="checkbox"]', rows).prop('checked', this.checked);
+    });
+
+    $('#example tbody').on('change', 'input[type="checkbox"]', function(){
+      // If checkbox is not checked
+      if(!this.checked){
+         var el = $('#select-all').get(0);
+         // If "Select all" control is checked and has 'indeterminate' property
+         if(el && el.checked && ('indeterminate' in el)){
+            // Set visual state of "Select all" control
+            // as 'indeterminate'
+            el.indeterminate = true;
+         }
+      }
+    });
+
+   // Handle form submission event
+   $('#baseline').on('click', function(e){
+      var images = [];
+
+      var form = this;
+
+      // Iterate over all checkboxes in the table
+      table.$('input[type="checkbox"]').each(function(){
+         // If checkbox doesn't exist in DOM
+         if($.contains(document, this)){
+            // If checkbox is checked
+            if(this.checked){
+               // Create a hidden element
+               images.push(this.name);
+            }
+         }
+      });
+
+      if (images.length > 0) {
+        $.ajax({
+          url: '/baseline_images',
+          type: 'POST',
+          contentType: "application/json",
+          data: JSON.stringify({'images' : images}),
+          success: function(data) {
+            $('#success').show();
+          }
+        });
+      } else {
+        $('#failed').text('Select image to baseline');
+        $('#failed').show();
+      }
+   });
+});
+</script>
+{% endblock %}
