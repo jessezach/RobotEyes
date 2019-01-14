@@ -22,7 +22,7 @@ Visual regression library and report generator for robot framework. Capture elem
       license='MIT',
       packages=find_packages(),
       include_package_data=True,
-      zip_safe=True,
+      zip_safe=False,
       install_requires=[
           'pillow',
           'robotframework',
