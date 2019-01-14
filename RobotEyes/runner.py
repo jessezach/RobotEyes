@@ -1,21 +1,37 @@
-from . import web
 import sys
+from optparse import OptionParser
+
+from . import web
+
+
+def parse_options():
+    parser = OptionParser()
+
+    parser.add_option(
+        '--results',
+        dest='results',
+        default='',
+        help="relative path to results folder where visual_images directory exists"
+    )
+
+    parser.add_option(
+        '--host',
+        dest='host',
+        default='0.0.0.0',
+        help="host on which server should run"
+    )
+
+    parser.add_option(
+        '--port',
+        dest='port',
+        default=5000,
+        help="port on which server should run"
+    )
+    opts, args = parser.parse_args()
+    return parser, opts, args
 
 
 def main():
-    try:
-        results = sys.argv[1]
-    except IndexError:
-        results = ''
+    parser, opts, arguments = parse_options()
 
-    try:
-        host = sys.argv[2]
-    except IndexError:
-        host = '127.0.0.1'
-
-    try:
-        port = sys.argv[3]
-    except IndexError:
-        port = 5000
-
-    web.start(results, host, port)
+    web.start(opts.results, opts.host, opts.port)
