@@ -179,24 +179,24 @@ def report():
     return render_template('report.html', data=data)
 
 
-@app.route("/baseline", methods=['POST'])
+@app.route("/baseline_test", methods=['POST'])
 def make_all_baseline():
+    tests = request.json['tests']
+
     baseline_path = os.path.join(results, 'visual_images', 'baseline')
     actual_path = os.path.join(results, 'visual_images', 'actual')
 
-    for directory in os.listdir(os.path.join(actual_path)):
+    for test in tests:
+        baseline_test = os.path.join(baseline_path, test)
+        actual_test = os.path.join(actual_path, test)
 
-        if os.path.isdir(os.path.join(actual_path, directory)):
-            abs_directory = os.path.join(actual_path, directory)
-            b_directory = os.path.join(baseline_path, directory)
+        if os.path.exists(baseline_test):
+            shutil.rmtree(baseline_test)
 
-            if os.path.exists(b_directory):
-                shutil.rmtree(b_directory)
+        shutil.copytree(actual_test, baseline_test)
 
-            shutil.copytree(abs_directory, b_directory)
-
-    flash('Successfully moved all images.')
-    return redirect(url_for('report'))
+    resp = {"success": True}
+    return jsonify(resp)
 
 
 @app.route("/baseline_images", methods=['POST'])

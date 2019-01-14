@@ -2,72 +2,104 @@
 
 {% block body %}
 <div class="tabcontent" id="suiteMetrics" style="position:relative;left:235px;width:80%">
+    <div class="alert alert-success" role="alert" id="success" style="display:none;">
+        Successfully moved all images
+    </div>
+    <div class="alert alert-danger" role="alert" id="failed" style="display:none;">
+        Error
+    </div>
     <h4><b><i class="fa fa-table"></i> Passed Tests</b></h4>
     <hr/>
 
-    <form id="frm-example" action="/path/to/your/script.php" method="POST">
-        <p>
-            <button class="btn btn-primary active inner">Baseline Selected Images</button>
-        </p>
-        <table id="example" class="display" cellspacing="0" width="100%">
-            <thead>
-            <tr>
-            <tr>
-                <th></th>
-                <th>Test Case</th>
-                <th>Status</th>
-                <th>Images</th>
-            </tr>
-            </tr>
-            </thead>
-            <tbody>
-            {% for k, v in passed.items() %}
-            <tr>
-                <td></td>
-                <td>{{ k }}</td>
-                <td>Passed</td>
-                <td><a href="/{{ v }}">View Images</a></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </form>
+    <p>
+        <button class="btn btn-primary active inner" id="baseline">Baseline Selected Images</button>
+    </p>
+    <table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+        <tr>
+            <th><input type="checkbox" name="select_all" value="1" id="select-all"></th>
+            <th>Test Case</th>
+            <th>Status</th>
+            <th>Images</th>
+        </tr>
+        </tr>
+        </thead>
+        <tbody>
+        {% for k, v in passed.items() %}
+        <tr>
+            <td><input type="checkbox" name="{{ v }}" value="2"></td>
+            <td>{{ k }}</td>
+            <td>Passed</td>
+            <td><a href="/{{ v }}">View Images</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 <script>
 $(document).ready(function() {
    var table = $('#example').DataTable({
-      'columnDefs': [
-         {
-            'targets': 0,
-            'checkboxes': {
-               'selectRow': false
-            }
-         }
-      ],
-      'select': {
-         'style': 'multi'
-      },
+	"columnDefs": [ {
+	"targets": 0,
+	"orderable": false
+	} ],
       'order': [[1, 'asc']]
    });
 
-   // Handle form submission event
-   $('#frm-example').on('submit', function(e){
+  $('#select-all').on('click', function(){
+      // Get all rows with search applied
+      var rows = table.rows({ 'search': 'applied' }).nodes();
+      // Check/uncheck checkboxes for all rows in the table
+      $('input[type="checkbox"]', rows).prop('checked', this.checked);
+  });
+
+  $('#example tbody').on('change', 'input[type="checkbox"]', function(){
+      // If checkbox is not checked
+      if(!this.checked){
+         var el = $('#select-all').get(0);
+         // If "Select all" control is checked and has 'indeterminate' property
+         if(el && el.checked && ('indeterminate' in el)){
+            // Set visual state of "Select all" control
+            // as 'indeterminate'
+            el.indeterminate = true;
+         }
+      }
+  });
+
+  // Handle form submission event
+  $('#baseline').on('click', function(e){
+      var images = [];
+
       var form = this;
 
-      var rows_selected = table.column(0).checkboxes.selected();
-
-      // Iterate over all selected checkboxes
-      $.each(rows_selected, function(index, rowId){
-         // Create a hidden element
-         $(form).append(
-             $('<input>')
-                .attr('type', 'hidden')
-                .attr('name', 'id[]')
-                .val(rowId)
-         );
+      // Iterate over all checkboxes in the table
+      table.$('input[type="checkbox"]').each(function(){
+         // If checkbox doesn't exist in DOM
+         if($.contains(document, this)){
+            // If checkbox is checked
+            if(this.checked){
+               // Create a hidden element
+               images.push(this.name);
+            }
+         }
       });
 
-   });
+      if (images.length > 0) {
+        $.ajax({
+          url: '/baseline_test',
+          type: 'POST',
+          contentType: "application/json",
+          data: JSON.stringify({'tests' : images}),
+          success: function(data) {
+            $('#success').show();
+          }
+        });
+      } else {
+        $('#failed').text('Select image to baseline');
+        $('#failed').show();
+      }
+  });
 });
 </script>
 {% endblock %}
