@@ -4,6 +4,7 @@ import time
 import subprocess
 import platform
 import math
+from datetime import datetime
 
 from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
@@ -297,9 +298,9 @@ class RobotEyes(object):
             img.save(arg)
 
     def _delete_report_if_old(self, path):
-        t1 = os.path.getmtime(path)
-        t2 = time.time()
-        diff = int(t2 - t1)
+        t1 = datetime.fromtimestamp(os.path.getmtime(path))
+        t2 = datetime.now()
+        diff = int(t2 - t1).seconds
         os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
 
     def _output_dir(self):
