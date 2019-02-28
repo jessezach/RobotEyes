@@ -300,7 +300,8 @@ class RobotEyes(object):
     def _delete_report_if_old(self, path):
         t1 = datetime.fromtimestamp(os.path.getmtime(path))
         t2 = datetime.now()
-        diff = int(t2 - t1).seconds
+        diff = (t2 - t1).seconds
+
         os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
 
     def _output_dir(self):
