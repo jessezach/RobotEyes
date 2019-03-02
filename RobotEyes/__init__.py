@@ -4,6 +4,7 @@ import time
 import subprocess
 import platform
 import math
+from datetime import datetime
 
 from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
@@ -176,7 +177,7 @@ class RobotEyes(object):
 
             self._write_to_report()
 
-            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if self.fail else ''
+            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
@@ -297,9 +298,10 @@ class RobotEyes(object):
             img.save(arg)
 
     def _delete_report_if_old(self, path):
-        t1 = os.path.getmtime(path)
-        t2 = time.time()
-        diff = int(t2 - t1)
+        t1 = datetime.fromtimestamp(os.path.getmtime(path))
+        t2 = datetime.now()
+        diff = (t2 - t1).seconds
+
         os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
 
     def _output_dir(self):
