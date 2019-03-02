@@ -177,7 +177,7 @@ class RobotEyes(object):
 
             self._write_to_report()
 
-            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds threshold') if self.fail else ''
+            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 %s %s %s' \
