@@ -1,3 +1,12 @@
+#MacOS
 *.DS_Store
+
+# Python byte code
 *.pyc
+
+# IDE
 .idea/
+.vscode
+
+# Python Environment
+env
