@@ -5,7 +5,7 @@
 
 Visual Regression Library for Robot Framework
 
-Uses Imagemagick to compare images and create a diff image. Custom Report to view baseline, actual and diff images. View passed and failed tests. Blur regions (only for selenium) within a page to ignore comparison (helpful when there are dynamic elements like text etc in a page). Support SeleniumLibrary(tested) , Selenium2Library(tested) and AppiumLibrary(not tested).
+Uses Imagemagick to Compare Images and create a diff image. Custom Report to view baseline, actual and diff images. View passed and failed tests. Blur regions (only for selenium) within a page to ignore comparison (helpful when there are dynamic elements like text etc in a page). Support SeleniumLibrary(tested) , Selenium2Library(tested) and AppiumLibrary(not tested).
 ## Requirements
 - Install the `robotframework-eyes` library using `pip`: 
 ```
@@ -18,9 +18,9 @@ Uses Imagemagick to compare images and create a diff image. Custom Report to vie
  ```
     Library    RobotEyes    test
  ```    
-- Call the `open eyes` keyword after opening the browser in your selenium test.
-- Use the `capture full screen` and `capture element` keywords to capture images.
-- Call the `compare images` keyword at the end of the test to compare all the images captured in the respective test.
+- Call the `Open Eyes` keyword after opening the browser in your selenium test.
+- Use the `Capture Full Screen` and `Capture Element` keywords to capture images.
+- Call the `Compare Images` keyword at the end of the test to compare all the images captured in the respective test.
 - Once done running the tests, view the test report within the specified results folder or execute the report generator script and pass the path to output directory to generate report manually. Eg:<br/>
 ```
     reportgen results
@@ -31,27 +31,27 @@ This guide contains the suggested steps to efficently integrate `RobotEyes` libr
 It also serves as documentation to clarify how this library functions on a high level.
 
 ## Keyword Documentation
-- `open eyes`:<br/>
+- `Open Eyes`:<br/>
 Arguments: library. E.g. AppiumLibrary (optional).<br/> 
 Gets current selenium/appium instance.<br/>
 
-- `capture full screen`:<br/>
+- `Capture Full Screen`:<br/>
 Arguments: tolerance, blur (array of locators to blur, optional), radius(thickness of blur, optional).<br/>
 Captures the entire screen.<br/>
 
-- `capture element`:<br/>
+- `Capture Element`:<br/>
 Arguments: locator, blur(array of locators to blur, optional), radius(thickness of blur, optional).<br/>
 Captures a region or an individual element in a webpage.<br/>
 
-- `capture mobile element`:<br/>
+- `Capture Mobile Element`:<br/>
 Arguments: locator.<br/>
 Captures a region or an individual element in a mobile screen.<br/>
 
-- `scroll to element`:<br/>
+- `Scroll To Element`:<br/>
 Arguments: locator.<br/>
 Scrolls to an element in a webpage.<br/>
 
-- `compare images`:<br/>
+- `Compare Images`:<br/>
 Arguments: None<br/>
 Compares **all** the `actual` images of a test case against the `baseline` images<br/>
 
@@ -135,8 +135,8 @@ To generate the `baseline` images against which the `actual` images will be comp
 ```robotframework
     Library    RobotEyes    baseline    0.01
 ```
-- The `open eyes` keyword after the `open browser` keyword.
-- Any of the image capture keywords. E.g `capture full screen`
+- The `Open Eyes` keyword after the `Open Browser` keyword.
+- Any of the image capture keywords. E.g `Capture Full Screen`
 
 For example:
 ```robotframework
@@ -148,12 +148,12 @@ Library    RobotEyes    baseline    0.01
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
-    open browser    https://www.google.com/    chrome
-    maximize browser window
-    open eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
-    wait until element is visible    id=lst-ib
-    capture full screen
-    close browser
+    Open Browser    https://www.google.com/    chrome
+    Maximize Browser Window
+    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Wait Until Element Is Visible    id=lst-ib
+    Capture Full Screen
+    Close Browser
 ```
 
 If the test above is executed, `RobotEyes` will take a full screen capture, name it `img1.png` and store it in the `baseline` directory.<br/>
@@ -167,8 +167,8 @@ Similarly, to generate the `actual` images, the following needs to exist in the 
 ```robotframework
 Library    RobotEyes    test    0.01
 ```
-- The `open eyes` keyword after the `open browser` keyword.
-- Any of the image capture keywords. E.g `capture full screen`
+- The `Open Eyes` keyword after the `Open Browser` keyword.
+- Any of the image capture keywords. E.g `Capture Full Screen`
 
 For example:
 ```robotframework
@@ -180,12 +180,12 @@ Library    RobotEyes    test    0.01
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
-    open browser    https://www.google.com/    chrome
-    maximize browser window
-    open eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
-    wait until element is visible    id=lst-ib
-    capture full screen
-    close browser
+    Open Browser    https://www.google.com/    chrome
+    Maximize Browser Window
+    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Wait Until Element Is Visible    id=lst-ib
+    Capture Full Screen
+    Close Browser
 ```
 Notice that the only difference is that the library declaration argument changed from `baseline` to `test`.<br/>
 If the TC above is executed, the library will use the same capture keyword to generate the `actual` image, which will also be named `img1.png`.<br/>
@@ -197,9 +197,9 @@ To compare the images, the following needs to exist in the TC's code:
 ```robotframework
 Library    RobotEyes    test    0.01
 ```
-- The `open eyes` keyword after the `open browser` keyword.
-- Any of the image capture keywords. E.g `capture full screen`
-- The `compare images` keyword after capturing the desired images.
+- The `Open Eyes` keyword after the `Open Browser` keyword.
+- Any of the image capture keywords. E.g `Capture Full Screen`
+- The `Compare Images` keyword after capturing the desired images.
 
 For Example:
 ```robotframework
@@ -211,15 +211,15 @@ Library    RobotEyes    test    0.01
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
-    open browser    https://www.google.com/    chrome
-    maximize browser window
-    open eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
-    wait until element is visible    id=lst-ib
-    capture full screen
-    compare images
-    close browser
+    Open Browser    https://www.google.com/    chrome
+    Maximize Browser Window
+    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Wait Until Element Is Visible    id=lst-ib
+    Capture Full Screen
+    Compare Images
+    Close Browser
 ```
-After the comparison is completed (i.e. the `compare images` keyword in the TC is executed), a difference image will be generated and stored in the `diff` directory.<br/>
+After the comparison is completed (i.e. the `Compare Images` keyword in the TC is executed), a difference image will be generated and stored in the `diff` directory.<br/>
 Also, a text file will be created containing the result of the comparison between the RMSE (root mean squared error) of the `diff` image and the tolerance set by the user.<br/>
 After that, the regular Robot Framework report will raise a failure if the comparison fails.
 Additionally, the visual report should automatically be generated after test have finished.<br/>
@@ -241,16 +241,16 @@ Library    RobotEyes    test   0.01
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
-    open browser    https://www.google.com/    chrome
-    maximize browser window
-    open eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
-    wait until element is visible    id=lst-ib
+    Open Browser    https://www.google.com/    chrome
+    Maximize Browser Window
+    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Wait Until Element Is Visible    id=lst-ib
     # Below, the optional arguments are the tolerance to override global value, the regions to blur in the image and
     # the thickness of the blur (radius of Gaussian blur applied to the regions) 
-    capture full screen    0.05    ${blur}    50
-    capture element    id=hplogo
-    compare images
-    close browser
+    Capture Full Screen    0.05    ${blur}    50
+    Capture Element    id=hplogo
+    Compare Images
+    Close Browser
 ```
 ## Interactive Report
 Robot Eyes generates a report automatically after all tests have been executed. However a more interactive and intuitive flask based report is available. To use this report, run below command:</br>
