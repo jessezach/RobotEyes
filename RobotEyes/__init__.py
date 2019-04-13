@@ -39,7 +39,6 @@ class RobotEyes(object):
                 self.driver = s2l._current_application()
             else:
                 self.driver = s2l._current_browser()
-
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
@@ -63,7 +62,6 @@ class RobotEyes(object):
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
         tolerance = tolerance if tolerance else self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-
         self._blur_regions(blur, radius) if blur else ''
 
         if self.mode.lower() == MODE_TEST:
@@ -74,18 +72,14 @@ class RobotEyes(object):
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None):
         tolerance = tolerance if tolerance else self.tolerance
-
         prefix, locator, search_element = self._find_element(selector)
-
         location = search_element.location
         size = search_element.size
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-
         left = location['x']
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
-
         image = Image.open(self.path + '/img' + str(self.count) + '.png')
         image = image.crop((left, top, right, bottom))
         image.save(self.path + '/img' + str(self.count) + '.png')
@@ -98,19 +92,15 @@ class RobotEyes(object):
     # Captures a specific region in a webpage
     def capture_element(self, selector, tolerance=None, blur=[], radius=50):
         tolerance = tolerance if tolerance else self.tolerance
-
         prefix, locator, _ = self._find_element(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
-
         coord = self._get_coordinates(prefix, locator)
         left = math.ceil(coord['left'])
         top = math.ceil(coord['top'])
         right = math.ceil(coord['right'])
         bottom = math.ceil(coord['bottom'])
-
         self._blur_regions(blur, radius) if blur else ''
-
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
 
         if self.sys.lower() == "darwin":
@@ -119,7 +109,6 @@ class RobotEyes(object):
             im = im.crop((left, top, right, bottom))
 
         im.save(self.path + '/img' + str(self.count) + '.png')
-
         if self.mode.lower() == MODE_TEST:
             key = 'img' + str(self.count) + '.png'
             self.stats[key] = tolerance
@@ -138,7 +127,6 @@ class RobotEyes(object):
 
             if not os.path.exists(diff_path):
                 os.makedirs(diff_path)
-
             self.content += make_parent_row(self.test_name)
 
             # compare actual and baseline images and save the diff image
@@ -154,39 +142,31 @@ class RobotEyes(object):
 
                     if os.path.exists(b_path):
                         self._resize(b_path, a_path)
-
                         difference = self._compare(b_path, a_path, d_path)
-
                         threshold = float(self.stats[filename])
-
                         color, result = self._get_result(difference, threshold)
-
                         text = '%s %s' % (result, color)
                         final_result = [color, result]
-
                         output = open(actual_path + '/' + filename + '.txt', 'w')
                         output.write(text)
                         output.close()
-
                         self.content += make_image_row(b_path, a_path, d_path, final_result)
                     else:
                         raise Exception('Baseline image does not exist for %s in test %s' % (filename, test_name))
 
             self.content += INNER_TABLE_END
             self.content += FOOTER
-
             self._write_to_report()
-
             BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 "%s" "%s" "%s"' \
                       % (a_path, b_path, d_path)
-
+        
         proc = subprocess.Popen(compare_cmd,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        
         out, err = proc.communicate()
-        print(err)
         diff = err.split()[1][1:-1]
 
         if len(diff) >= 4:
@@ -243,10 +223,9 @@ class RobotEyes(object):
         if self.mode.lower() == MODE_TEST:
             if os.path.exists(actual_image_test_folder):
                 shutil.rmtree(actual_image_test_folder)
-
+                
             if os.path.exists(diff_image_test_folder):
                 shutil.rmtree(diff_image_test_folder)
-
         elif self.mode.lower() == MODE_BASELINE:
             if os.path.exists(baseline_image_test_folder):
                 shutil.rmtree(baseline_image_test_folder)
@@ -269,12 +248,10 @@ class RobotEyes(object):
         for region in selectors:
             prefix, locator, _ = self._find_element(region)
             area_coordinates = self._get_coordinates(prefix, locator)
-
             left = math.ceil(area_coordinates['left'])
             top = math.ceil(area_coordinates['top'])
             right = math.ceil(area_coordinates['right'])
             bottom = math.ceil(area_coordinates['bottom'])
-
             im = Image.open(self.path + '/img' + str(self.count) + '.png')
 
             if self.sys.lower() == "darwin":
@@ -301,7 +278,6 @@ class RobotEyes(object):
         t1 = datetime.fromtimestamp(os.path.getmtime(path))
         t2 = datetime.now()
         diff = (t2 - t1).seconds
-
         os.remove(path) if diff > REPORT_EXPIRATION_THRESHOLD else ''
 
     def _output_dir(self):
@@ -317,15 +293,12 @@ class RobotEyes(object):
             color = 'red'
             result = '%s<%s' % (threshold, difference)
             self.fail = True
-
         elif difference == threshold:
             color = 'green'
             result = '%s==%s' % (threshold, difference)
-
         else:
             color = 'green'
             result = '%s>%s' % (threshold, difference)
-
         return color, result
 
     def _write_to_report(self):
