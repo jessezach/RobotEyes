@@ -22,11 +22,9 @@ def overview():
 
             if os.path.isdir(abs_directory):
                 last_found = ''  # incase we are inside an empty directory
-
                 for file in os.listdir(abs_directory):
                     if file.endswith('.txt'):
                         f = os.path.join(abs_directory, file)
-
                         obj = open(f, 'r')
                         first_line = obj.readline().strip()
                         arr = first_line.split()

@@ -20,8 +20,7 @@ class RobotEyes(object):
     test_name = ''
     count = 0
 
-    def __init__(self, mode, tolerance=0):
-        self.mode = mode
+    def __init__(self, tolerance=0):
         self.sys = platform.system()
         self.tolerance = tolerance
         self.stats = {}
@@ -63,10 +62,8 @@ class RobotEyes(object):
         tolerance = tolerance if tolerance else self.tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         self._blur_regions(blur, radius) if blur else ''
-
-        if self.mode.lower() == MODE_TEST:
-            key = 'img' + str(self.count) + '.png'
-            self.stats[key] = tolerance
+        key = 'img' + str(self.count) + '.png'
+        self.stats[key] = tolerance
         self.count += 1
 
     # Captures a specific region in a mobile screen
@@ -83,10 +80,8 @@ class RobotEyes(object):
         image = Image.open(self.path + '/img' + str(self.count) + '.png')
         image = image.crop((left, top, right, bottom))
         image.save(self.path + '/img' + str(self.count) + '.png')
-
-        if self.mode.lower() == MODE_TEST:
-            key = 'img' + str(self.count) + '.png'
-            self.stats[key] = tolerance
+        key = 'img' + str(self.count) + '.png'
+        self.stats[key] = tolerance
         self.count += 1
 
     # Captures a specific region in a webpage
@@ -109,9 +104,8 @@ class RobotEyes(object):
             im = im.crop((left, top, right, bottom))
 
         im.save(self.path + '/img' + str(self.count) + '.png')
-        if self.mode.lower() == MODE_TEST:
-            key = 'img' + str(self.count) + '.png'
-            self.stats[key] = tolerance
+        key = 'img' + str(self.count) + '.png'
+        self.stats[key] = tolerance
         self.count += 1
 
     def scroll_to_element(self, selector):
@@ -119,45 +113,46 @@ class RobotEyes(object):
         self.driver.execute_script("return arguments[0].scrollIntoView();", search_element)
 
     def compare_images(self):
-        if self.mode.lower() == MODE_TEST:
-            test_name = self.test_name.replace(' ', '_')
-            baseline_path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name)
-            actual_path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name)
-            diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
+        test_name = self.test_name.replace(' ', '_')
+        baseline_path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name)
+        actual_path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name)
+        diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
 
-            if not os.path.exists(diff_path):
-                os.makedirs(diff_path)
-            self.content += make_parent_row(self.test_name)
+        if not os.path.exists(diff_path):
+            os.makedirs(diff_path)
+        self.content += make_parent_row(self.test_name)
 
-            # compare actual and baseline images and save the diff image
-            for filename in os.listdir(actual_path):
-                a_path = ''
-                b_path = ''
-                d_path = ''
+        # compare actual and baseline images and save the diff image
+        for filename in os.listdir(actual_path):
+            a_path = ''
+            b_path = ''
+            d_path = ''
 
-                if filename.endswith('.png'):
-                    b_path = os.path.join(baseline_path, filename)
-                    a_path = os.path.join(actual_path, filename)
-                    d_path = os.path.join(diff_path, filename)
+            if filename.endswith('.png'):
+                b_path = os.path.join(baseline_path, filename)
+                a_path = os.path.join(actual_path, filename)
+                d_path = os.path.join(diff_path, filename)
 
-                    if os.path.exists(b_path):
-                        self._resize(b_path, a_path)
-                        difference = self._compare(b_path, a_path, d_path)
-                        threshold = float(self.stats[filename])
-                        color, result = self._get_result(difference, threshold)
-                        text = '%s %s' % (result, color)
-                        final_result = [color, result]
-                        output = open(actual_path + '/' + filename + '.txt', 'w')
-                        output.write(text)
-                        output.close()
-                        self.content += make_image_row(b_path, a_path, d_path, final_result)
-                    else:
-                        raise Exception('Baseline image does not exist for %s in test %s' % (filename, test_name))
+                if os.path.exists(b_path):
+                    self._resize(b_path, a_path)
+                    difference = self._compare(b_path, a_path, d_path)
+                    threshold = float(self.stats[filename])
+                    color, result = self._get_result(difference, threshold)
+                    text = '%s %s' % (result, color)
+                    self.content += make_image_row(b_path, a_path, d_path, [color, result])
+                else:
+                    shutil.copy(a_path, b_path)
+                    text = '%s %s' % ('None', 'green')
+                    self.content += make_image_row(b_path, a_path, d_path, ['green', 'None'])
 
-            self.content += INNER_TABLE_END
-            self.content += FOOTER
-            self._write_to_report()
-            BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
+                output = open(actual_path + '/' + filename + '.txt', 'w')
+                output.write(text)
+                output.close()
+
+        self.content += INNER_TABLE_END
+        self.content += FOOTER
+        self._write_to_report()
+        BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 "%s" "%s" "%s"' \
@@ -168,7 +163,7 @@ class RobotEyes(object):
         
         out, err = proc.communicate()
         diff = err.split()[1][1:-1]
-
+        print(diff)
         if len(diff) >= 4:
             diff = diff[0:4]
         return float(diff)
@@ -218,26 +213,20 @@ class RobotEyes(object):
     def _delete_folder_if_exists(self, test_name_folder):
         actual_image_test_folder = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
         diff_image_test_folder = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name_folder)
-        baseline_image_test_folder = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name_folder)
 
-        if self.mode.lower() == MODE_TEST:
-            if os.path.exists(actual_image_test_folder):
-                shutil.rmtree(actual_image_test_folder)
+        if os.path.exists(actual_image_test_folder):
+            shutil.rmtree(actual_image_test_folder)
                 
-            if os.path.exists(diff_image_test_folder):
-                shutil.rmtree(diff_image_test_folder)
-        elif self.mode.lower() == MODE_BASELINE:
-            if os.path.exists(baseline_image_test_folder):
-                shutil.rmtree(baseline_image_test_folder)
-        else:
-            raise Exception('Mode should be test or baseline')
+        if os.path.exists(diff_image_test_folder):
+            shutil.rmtree(diff_image_test_folder)
 
     def _create_empty_folder(self, test_name_folder):
-        if self.mode.lower() == MODE_BASELINE:
-            self.path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name_folder)
+        self.path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name_folder)
 
-        elif self.mode.lower() == MODE_TEST:
-            self.path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
+        self.path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
