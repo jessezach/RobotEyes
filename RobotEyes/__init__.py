@@ -133,7 +133,12 @@ class RobotEyes(object):
                 if os.path.exists(b_path):
                     self._resize(b_path, a_path)
                     difference = self._compare(b_path, a_path, d_path)
-                    threshold = float(self.stats[filename])
+
+                    try:
+                        threshold = float(self.stats[filename])
+                    except ValueError:
+                        raise Exception('Invalid tolerance: %s' % self.stats[filename])
+
                     color, result = self._get_result(difference, threshold)
                     text = '%s %s' % (result, color)
                     self.content += make_image_row(b_path, a_path, d_path, [color, result])

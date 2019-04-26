@@ -111,7 +111,7 @@ def images(test):
     test_name = test.replace('_', ' ')
     output = {test_name: []}
 
-    baseline_directory = os.path.join(results, 'visual_images', 'baseline', test)
+    baseline_directory = os.path.join(baseline, test)
     actual_directory = os.path.join(results, 'visual_images', 'actual', test)
     diff_directory = os.path.join(results, 'visual_images', 'diff', test)
 
@@ -125,20 +125,21 @@ def images(test):
             file = file + '.txt'
             f = os.path.join(actual_directory, file)
 
-            obj = open(f, 'r')
-            first_line = obj.readline().strip()
-            arr = first_line.split()
-            obj.close()
-            color = arr[1]
-            value = arr[0]
-            images.append(color)
-            images.append(value)
-            output[test_name].append(images)
+            if os.path.exists(f):
+                obj = open(f, 'r')
+                first_line = obj.readline().strip()
+                arr = first_line.split()
+                obj.close()
+                color = arr[1]
+                value = arr[0]
+                images.append(color)
+                images.append(value)
+                output[test_name].append(images)
     return render_template('test.html', data=output)
 
 @app.route("/all")
 def report():
-    baseline_path = os.path.join(results, 'visual_images', 'baseline')
+    baseline_path = baseline
     actual_path = os.path.join(results, 'visual_images', 'actual')
     diff_path = os.path.join(results, 'visual_images', 'diff')
 
@@ -149,7 +150,6 @@ def report():
 
             if os.path.isdir(abs_directory):
                 test_name = directory.replace('_', ' ')
-
                 data[test_name] = []
 
                 for file in os.listdir(abs_directory):
@@ -181,7 +181,7 @@ def report():
 def make_all_baseline():
     tests = request.json['tests']
 
-    baseline_path = os.path.join(results, 'visual_images', 'baseline')
+    baseline_path = baseline
     actual_path = os.path.join(results, 'visual_images', 'actual')
 
     for test in tests:
@@ -227,9 +227,11 @@ def add_header(r):
     return r
 
 
-def start(res, host, port):
+def start(base, res, host, port):
     global results
+    global baseline
     results = res
+    baseline = base
     app.logger.info('Starting server on %s:%s' % (host, port))
 
     try:

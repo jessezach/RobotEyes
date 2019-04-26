@@ -15,6 +15,13 @@ def parse_options():
     )
 
     parser.add_option(
+        '--baseline',
+        dest='baseline',
+        default=None,
+        help="relative path to results folder where visual_images directory exists"
+    )
+
+    parser.add_option(
         '--host',
         dest='host',
         default='0.0.0.0',
@@ -34,4 +41,4 @@ def parse_options():
 def main():
     parser, opts, arguments = parse_options()
 
-    web.start(opts.results, opts.host, opts.port)
+    web.start(opts.baseline, opts.results, opts.host, opts.port)
