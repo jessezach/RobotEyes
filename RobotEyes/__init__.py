@@ -27,9 +27,9 @@ class RobotEyes(object):
         self.content = ''
         self.fail = False
 
-    def open_eyes(self, lib='Selenium2Library'):
-        self.output_dir = BuiltIn().replace_variables('${images_dir}')
-        self.output_dir = self._output_dir() if self.output_dir is None else os.path.join(os.getcwd(), self.output_dir)
+    def open_eyes(self, lib='SeleniumLibrary'):
+        self.baseline_dir = self._get_baseline_dir()
+        self.output_dir = self._output_dir()
         self.images_base_folder = os.path.join(self.output_dir, IMAGES_FOLDER)
 
         try:
@@ -111,7 +111,7 @@ class RobotEyes(object):
 
     def compare_images(self):
         test_name = self.test_name.replace(' ', '_')
-        baseline_path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name)
+        baseline_path = os.path.join(self.baseline_dir, test_name)
         actual_path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name)
         diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
 
@@ -160,10 +160,13 @@ class RobotEyes(object):
         
         out, err = proc.communicate()
         diff = err.split()[1][1:-1]
-        print(diff)
-        if len(diff) >= 4:
-            diff = diff[0:4]
-        return float(diff)
+        print('Difference: %s' % diff)
+        diff = diff[0:4] if len(diff) >= 4 else diff
+
+        try:
+            return float(diff)
+        except ValueError:
+            raise Exception('Comparison error: %s' % diff)
 
     def _find_element(self, selector):
         if selector.startswith('//'):
@@ -218,7 +221,7 @@ class RobotEyes(object):
             shutil.rmtree(diff_image_test_folder)
 
     def _create_empty_folder(self, test_name_folder):
-        self.path = os.path.join(self.images_base_folder, BASELINE_IMAGE_BASE_FOLDER, test_name_folder)
+        self.path = os.path.join(self.baseline_dir, test_name_folder)
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -299,3 +302,11 @@ class RobotEyes(object):
         file = open(self.report_path, 'w')
         file.write(self.content)
         file.close()
+
+    def _get_baseline_dir(self):
+        baseline_dir = BuiltIn().replace_variables('${images_dir}')
+        if baseline_dir is None:
+            raise Exception('Please provide image baseline directory. Ex: -v ${images_dir}:base')
+        baseline_dir = os.path.join(os.getcwd(), baseline_dir)
+        os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
+        return baseline_dir
