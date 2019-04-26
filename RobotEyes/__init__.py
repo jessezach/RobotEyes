@@ -306,7 +306,7 @@ class RobotEyes(object):
     def _get_baseline_dir(self):
         baseline_dir = BuiltIn().replace_variables('${images_dir}')
         if baseline_dir is None:
-            raise Exception('Please provide image baseline directory. Ex: -v ${images_dir}:base')
+            raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
         baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
