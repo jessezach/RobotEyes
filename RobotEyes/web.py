@@ -115,26 +115,27 @@ def images(test):
     actual_directory = os.path.join(results, 'visual_images', 'actual', test)
     diff_directory = os.path.join(results, 'visual_images', 'diff', test)
 
-    for file in os.listdir(actual_directory):
-        if file.endswith('.png'):
-            images = []
-            images.append(os.path.join(baseline_directory, file))
-            images.append(os.path.join(actual_directory, file))
-            images.append(os.path.join(diff_directory, file))
+    if os.path.isdir(actual_directory):
+        for file in os.listdir(actual_directory):
+            if file.endswith('.png'):
+                images = []
+                images.append(os.path.join(baseline_directory, file))
+                images.append(os.path.join(actual_directory, file))
+                images.append(os.path.join(diff_directory, file))
 
-            file = file + '.txt'
-            f = os.path.join(actual_directory, file)
+                file = file + '.txt'
+                f = os.path.join(actual_directory, file)
 
-            if os.path.exists(f):
-                obj = open(f, 'r')
-                first_line = obj.readline().strip()
-                arr = first_line.split()
-                obj.close()
-                color = arr[1]
-                value = arr[0]
-                images.append(color)
-                images.append(value)
-                output[test_name].append(images)
+                if os.path.exists(f):
+                    obj = open(f, 'r')
+                    first_line = obj.readline().strip()
+                    arr = first_line.split()
+                    obj.close()
+                    color = arr[1]
+                    value = arr[0]
+                    images.append(color)
+                    images.append(value)
+                    output[test_name].append(images)
     return render_template('test.html', data=output)
 
 @app.route("/all")
