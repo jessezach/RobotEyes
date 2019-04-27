@@ -58,6 +58,7 @@ class RobotEyes(object):
     # Captures full screen
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
         tolerance = tolerance if tolerance else self.tolerance
+        tolerance = tolerance/100 if tolerance >= 1 else tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         self._blur_regions(blur, radius) if blur else ''
         key = 'img' + str(self.count) + '.png'
@@ -85,6 +86,7 @@ class RobotEyes(object):
     # Captures a specific region in a webpage
     def capture_element(self, selector, tolerance=None, blur=[], radius=50):
         tolerance = tolerance if tolerance else self.tolerance
+        tolerance = tolerance/100 if tolerance >= 1 else tolerance
         prefix, locator, _ = self._find_element(selector)
         time.sleep(1)
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
