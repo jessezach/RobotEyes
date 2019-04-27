@@ -23,6 +23,7 @@ class RobotEyes(object):
     def __init__(self, tolerance=0):
         self.sys = platform.system()
         self.tolerance = tolerance
+        self.tolerance = self.tolerance/100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
         self.content = ''
         self.fail = False
@@ -268,6 +269,7 @@ class RobotEyes(object):
         return output_dir
 
     def _get_result(self, difference, threshold):
+        difference, threshold = int(difference*100), int(threshold*100)
         if difference > threshold:
             color = 'red'
             result = '%s<%s' % (threshold, difference)
