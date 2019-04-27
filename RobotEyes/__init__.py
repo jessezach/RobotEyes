@@ -93,13 +93,9 @@ class RobotEyes(object):
         right = math.ceil(coord['right'])
         bottom = math.ceil(coord['bottom'])
         self._blur_regions(blur, radius) if blur else ''
+        left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
-
-        if self.sys.lower() == "darwin":
-            im = im.crop((left + left, top + top, right + right, bottom + bottom))
-        else:
-            im = im.crop((left, top, right, bottom))
-
+        im = im.crop((left, top, right, bottom))
         im.save(self.path + '/img' + str(self.count) + '.png')
         key = 'img' + str(self.count) + '.png'
         self.stats[key] = tolerance
@@ -165,7 +161,7 @@ class RobotEyes(object):
         
         out, err = proc.communicate()
         diff = err.split()[1][1:-1]
-        print('Difference: %s' % diff)
+        print('Comparison output: %s' % diff)
         diff = diff[0:4] if len(diff) >= 4 else diff
 
         try:
@@ -221,7 +217,7 @@ class RobotEyes(object):
 
         if os.path.exists(actual_image_test_folder):
             shutil.rmtree(actual_image_test_folder)
-                
+
         if os.path.exists(diff_image_test_folder):
             shutil.rmtree(diff_image_test_folder)
 
@@ -242,30 +238,19 @@ class RobotEyes(object):
         for region in selectors:
             prefix, locator, _ = self._find_element(region)
             area_coordinates = self._get_coordinates(prefix, locator)
-            left = math.ceil(area_coordinates['left'])
-            top = math.ceil(area_coordinates['top'])
-            right = math.ceil(area_coordinates['right'])
-            bottom = math.ceil(area_coordinates['bottom'])
+            left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
+            top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
+            left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
             im = Image.open(self.path + '/img' + str(self.count) + '.png')
-
-            if self.sys.lower() == "darwin":
-                cropped_image = im.crop((left + left, top + top, right + right, bottom + bottom))
-            else:
-                cropped_image = im.crop((left, top, right, bottom))
-
+            cropped_image = im.crop((left, top, right, bottom))
             blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=float(radius)))
-
-            if self.sys.lower() == "darwin":
-                im.paste(blurred_image, (left + left, top + top, right + right, bottom + bottom))
-            else:
-                im.paste(blurred_image, (left, top, right, bottom))
-
+            im.paste(blurred_image, (left, top, right, bottom))
             im.save(self.path + '/img' + str(self.count) + '.png')
 
     def _resize(self, *args):
         for arg in args:
             img = Image.open(arg)
-            img = img.resize((1024, 1024), Image.ANTIALIAS)
+            img = img.resize((1024, 700), Image.ANTIALIAS)
             img.save(arg)
 
     def _delete_report_if_old(self, path):
@@ -315,3 +300,11 @@ class RobotEyes(object):
         baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
+
+    def _update_coordinates(self, left, right, top, bottom):
+        if self.sys.lower() == "darwin":
+            left = left * 2
+            right = right * 2
+            top = top * 2
+            bottom = bottom * 2
+        return left, right, top, bottom
