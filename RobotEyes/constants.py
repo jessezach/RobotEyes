@@ -6,3 +6,4 @@ MODE_TEST = 'test'
 MODE_BASELINE = 'baseline'
 REPORT_FILE = 'visualReport.html'
 REPORT_EXPIRATION_THRESHOLD = 10
+

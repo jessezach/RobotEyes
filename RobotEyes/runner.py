@@ -1,4 +1,3 @@
-import sys
 from optparse import OptionParser
 
 from . import web
@@ -11,6 +10,13 @@ def parse_options():
         '--results',
         dest='results',
         default='',
+        help="relative path to results folder where visual_images directory exists"
+    )
+
+    parser.add_option(
+        '--baseline',
+        dest='baseline',
+        default=None,
         help="relative path to results folder where visual_images directory exists"
     )
 
@@ -34,4 +40,4 @@ def parse_options():
 def main():
     parser, opts, arguments = parse_options()
 
-    web.start(opts.results, opts.host, opts.port)
+    web.start(opts.baseline, opts.results, opts.host, opts.port)
