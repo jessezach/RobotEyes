@@ -59,7 +59,7 @@ Compares **all** the `actual` images of a test case against the `baseline` image
 If baseline image directory does not exist, RobotEyes will create it.
 If baseline image(s) does not exist, RobotEyes will move the captured image into the baseline directory.
 For example, when running tests the first time all captured images will be moved to baseline directory passed by you (images_dir) <br/>
-**Important** It is mandatory to pass baseline image directory, absence of which will throw and exception.<br/>
+**Important** It is mandatory to pass baseline image directory, absence of which will throw an exception.<br/>
 
 ### Directory structure  
 The `RobotEyes` library creates a `visual_images` directory which will contain two additional directories, named `actual` & `diff`, respectively.<br/>
@@ -164,11 +164,6 @@ Sample visual regression test case  # Name of the example test case
 After the comparison is completed (i.e. the `Compare Images` keyword in the TC is executed), a difference image will be generated and stored in the `diff` directory.<br/>
 Also, a text file will be created containing the result of the comparison between the RMSE (root mean squared error) of the `diff` image and the tolerance set by the user.<br/>
 After that, the regular Robot Framework report will raise a failure if the comparison fails.
-Additionally, the visual report should automatically be generated after test have finished.<br/>
-To generate visual report manually, run:<br/>
-```
-    reportgen path/to/output directory
-```
 
 ### Another test example
 ```robotframework
@@ -198,7 +193,7 @@ Tolerance is the allowed dissimilarity between images. If comparison difference 
 You can pass tolerance globally at the time of importing RobotEyes. Ex `Library RobotEyes 5`.<br/>
 Additionally you can override globaly tolerance by passing it to `Captur Element`, `Capture Fullscreen` keywords.<br/>
 Ex: `Capture Element  <locator>  tolerance=10  blur=id=test`<br/>
-Tolerance should range between 1 to 10.<br/>
+Tolerance should range between 1 to 100<br/>
 
 ## Blurring elements from image
 You can also blur out unwanted elements (dynamic texts etc) from image to ignore them from comparison. This can help in getting more accurate test results. You can pass a list of locators or a single locator as argument to `Capture Element` and `Capture Full Screen` keywords.<br/>
@@ -207,15 +202,36 @@ Ex: `Capture Element  <locator>  blur=id=test`
     @{blur}    id=body    css=#SIvCob
     Capture Full Screen   <locator>  blur=${blur}
 ```
+
+## Basic Report
+Basic report is automatically generated in the specified results folder.</br>
+![Alt text](/basicreport.png "Basic Report")
+
+Alternatively you can generate report by running the following command.</br>
+```
+    reportgen --baseline=<baseline image folder> --results=<results folder>
+```
+
 ## Interactive Report
 Robot Eyes generates a report automatically after all tests have been executed. However a more interactive and intuitive flask based report is available.<br/>
 
 You can view passed and failed tests and also use this feature to move acceptable actual images to baseline directory.
 Run eyes server like this. `eyes --baseline=<baseline image directory> --results=<outputdir>(leave empty if output is at project root)`
 
+![Alt text](/overview.png "Home screen")
+![Alt text](/tests.png "Tests List")
+![Alt text](/images.png "Images")
+
+You can move selected images in a testcase by selecting images and clicking on "Baseline Images" button.</br>
+You can also move all images of test cases by selecting the test cases you want to baseline and clicking on "Baseline Images" button.</br>
 ## Pabot users
 Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
-A workaround can be to generate the report using `reportgen` to ensure it has no discrepancies.
+A workaround can be to generate the report using `
+
+
+
+
+` to ensure it has no discrepancies.
 
 ## Contributors:
 [Adirala Shiva](https://github.com/adiralashiva8) Contributed in creating a robotmetrics inspired reporting for RobotEyes.</br>
