@@ -226,12 +226,7 @@ You can move selected images in a testcase by selecting images and clicking on "
 You can also move all images of test cases by selecting the test cases you want to baseline and clicking on "Baseline Images" button.</br>
 ## Pabot users
 Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
-A workaround can be to generate the report using `
-
-
-
-
-` to ensure it has no discrepancies.
+A workaround can be to generate the report using `reportgen --baseline=<baseline images folder> --results=<results folder>` to ensure it has no discrepancies.
 
 ## Contributors:
 [Adirala Shiva](https://github.com/adiralashiva8) Contributed in creating a robotmetrics inspired reporting for RobotEyes.</br>
