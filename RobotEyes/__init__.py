@@ -22,7 +22,7 @@ class RobotEyes(object):
 
     def __init__(self, tolerance=0):
         self.sys = platform.system()
-        self.tolerance = tolerance
+        self.tolerance = float(tolerance)
         self.tolerance = self.tolerance/100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
         self.content = ''
@@ -57,7 +57,7 @@ class RobotEyes(object):
 
     # Captures full screen
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
-        tolerance = tolerance if tolerance else self.tolerance
+        tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         self._blur_regions(blur, radius) if blur else ''
@@ -67,7 +67,7 @@ class RobotEyes(object):
 
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None):
-        tolerance = tolerance if tolerance else self.tolerance
+        tolerance = float(tolerance) if tolerance else self.tolerance
         prefix, locator, search_element = self._find_element(selector)
         location = search_element.location
         size = search_element.size
@@ -85,7 +85,7 @@ class RobotEyes(object):
 
     # Captures a specific region in a webpage
     def capture_element(self, selector, tolerance=None, blur=[], radius=50):
-        tolerance = tolerance if tolerance else self.tolerance
+        tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
         prefix, locator, _ = self._find_element(selector)
         time.sleep(1)
@@ -165,12 +165,12 @@ class RobotEyes(object):
         out, err = proc.communicate()
         diff = err.split()[1][1:-1]
         print('Comparison output: %s' % diff)
-        diff = diff[0:4] if len(diff) >= 4 else diff
+        trimmed = diff[0:4] if len(diff) >= 4 else diff
 
         try:
-            return float(diff)
+            return float(trimmed)
         except ValueError:
-            raise Exception('Comparison error: %s' % diff)
+            raise Exception('Could not convert difference to float: %s' % diff)
 
     def _find_element(self, selector):
         if selector.startswith('//'):
