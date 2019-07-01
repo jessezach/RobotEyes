@@ -27,7 +27,6 @@ class RobotEyes(object):
         self.stats = {}
         # self.content = ''
         self.fail = False
-        self.parallel_run = False
 
     def open_eyes(self, lib='SeleniumLibrary'):
         self.baseline_dir = self._get_baseline_dir()
@@ -268,7 +267,6 @@ class RobotEyes(object):
         output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
 
         if 'pabot_results' in output_dir:
-            self.parallel_run = True
             index = output_dir.find('/pabot_results')
             return output_dir[:index]
         return output_dir
