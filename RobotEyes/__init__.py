@@ -165,7 +165,7 @@ class RobotEyes(object):
         
         out, err = proc.communicate()
         diff = err.split()[1][1:-1]
-        print('Comparison output: %s' % diff)
+        print('Comparison output: %s' % err)
         trimmed = diff[0:4] if len(diff) >= 4 else diff
 
         try:
