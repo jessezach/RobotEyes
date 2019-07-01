@@ -25,8 +25,9 @@ class RobotEyes(object):
         self.tolerance = float(tolerance)
         self.tolerance = self.tolerance/100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
-        self.content = ''
+        # self.content = ''
         self.fail = False
+        self.parallel_run = False
 
     def open_eyes(self, lib='SeleniumLibrary'):
         self.baseline_dir = self._get_baseline_dir()
@@ -61,6 +62,7 @@ class RobotEyes(object):
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
         self.driver.save_screenshot(self.path + '/img' + str(self.count) + '.png')
         self._blur_regions(blur, radius) if blur else ''
+        self._resize(self.path + '/img' + str(self.count) + '.png')
         key = 'img' + str(self.count) + '.png'
         self.stats[key] = tolerance
         self.count += 1
@@ -99,6 +101,7 @@ class RobotEyes(object):
         left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
         im = Image.open(self.path + '/img' + str(self.count) + '.png')
         im = im.crop((left, top, right, bottom))
+        im.resize((1024, 700), Image.ANTIALIAS)
         im.save(self.path + '/img' + str(self.count) + '.png')
         key = 'img' + str(self.count) + '.png'
         self.stats[key] = tolerance
@@ -116,7 +119,7 @@ class RobotEyes(object):
 
         if not os.path.exists(diff_path):
             os.makedirs(diff_path)
-        self.content += make_parent_row(self.test_name)
+        # self.content += make_parent_row(self.test_name)
 
         # compare actual and baseline images and save the diff image
         for filename in os.listdir(actual_path):
@@ -130,7 +133,6 @@ class RobotEyes(object):
                 d_path = os.path.join(diff_path, filename)
 
                 if os.path.exists(b_path):
-                    self._resize(b_path, a_path)
                     difference = self._compare(b_path, a_path, d_path)
 
                     try:
@@ -140,19 +142,19 @@ class RobotEyes(object):
 
                     color, result = self._get_result(difference, threshold)
                     text = '%s %s' % (result, color)
-                    self.content += make_image_row(b_path, a_path, d_path, [color, result])
+                    # self.content += make_image_row(b_path, a_path, d_path, [color, result])
                 else:
                     shutil.copy(a_path, b_path)
                     text = '%s %s' % ('None', 'green')
-                    self.content += make_image_row(b_path, a_path, d_path, ['green', 'None'])
+                    # self.content += make_image_row(b_path, a_path, d_path, ['green', 'None'])
 
                 output = open(actual_path + '/' + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
 
-        self.content += INNER_TABLE_END
-        self.content += FOOTER
-        self._write_to_report()
+        # self.content += INNER_TABLE_END
+        # self.content += FOOTER
+        # self._write_to_report()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
     def _compare(self, b_path, a_path, d_path):
@@ -266,6 +268,7 @@ class RobotEyes(object):
         output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
 
         if 'pabot_results' in output_dir:
+            self.parallel_run = True
             index = output_dir.find('/pabot_results')
             return output_dir[:index]
         return output_dir
