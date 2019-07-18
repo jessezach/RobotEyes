@@ -21,11 +21,11 @@ Uses Imagemagick to Compare Images and create a diff image. Custom Report to vie
 - Call the `Open Eyes` keyword after opening the browser in your selenium test.
 - Use the `Capture Full Screen` and `Capture Element` keywords to capture images.
 - Call the `Compare Images` keyword at the end of the test to compare all the images captured in the respective test.
-- Once done running the tests, view the test report within the specified results folder or execute the report generator script and pass the path to output directory to generate report manually. Eg:<br/>
+- Once done running the tests, execute the report generator script and pass the path to output directory to generate report manually. Eg:<br/>
 ```
     reportgen --baseline=<baseline image directory> --results=<output directory>
 ``` 
-- A custom report will be generated within the specified results folder (or root). 
+- A custom report will be generated at the root of your project. 
 ## Usage Guide
 This guide contains the suggested steps to efficently integrate `RobotEyes` library into your Robot Framework test development workflow.<br/>
 It also serves as documentation to clarify how this library functions on a high level.
@@ -204,10 +204,9 @@ Ex: `Capture Element  <locator>  blur=id=test`
 ```
 
 ## Basic Report
-Basic report is automatically generated in the specified results folder.</br>
 ![Alt text](/basicreport.png "Basic Report")
 
-Alternatively you can generate report by running the following command.</br>
+You can generate report by running the following command.</br>
 ```
     reportgen --baseline=<baseline image folder> --results=<results folder>
 ```
@@ -224,6 +223,9 @@ Run eyes server like this. `eyes --baseline=<baseline image directory> --results
 
 You can move selected images in a testcase by selecting images and clicking on "Baseline Images" button.</br>
 You can also move all images of test cases by selecting the test cases you want to baseline and clicking on "Baseline Images" button.</br>
+
+Note: You need to have gevent library installed in the machine to be able to use eyes server.</br>
+
 ## Pabot users
 Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
 A workaround can be to generate the report using `reportgen --baseline=<baseline images folder> --results=<results folder>` to ensure it has no discrepancies.
