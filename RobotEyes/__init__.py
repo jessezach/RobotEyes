@@ -49,12 +49,6 @@ class RobotEyes(object):
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
 
-        # Delete visualReport.html if modified_at is older than a specified time difference.
-        # Couldn't think of a better way to do this.
-        # New report gets appended to old test run report if this is not done.
-        self.report_path = os.path.join(self.output_dir, REPORT_FILE)
-        self._delete_report_if_old(self.report_path) if os.path.exists(self.report_path) else ''
-
     # Captures full screen
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
         tolerance = float(tolerance) if tolerance else self.tolerance
@@ -159,19 +153,28 @@ class RobotEyes(object):
     def _compare(self, b_path, a_path, d_path):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 "%s" "%s" "%s"' \
                       % (a_path, b_path, d_path)
-        
-        proc = subprocess.Popen(compare_cmd,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        
-        out, err = proc.communicate()
-        diff = err.split()[1][1:-1]
-        print('Comparison output: %s' % err)
-        trimmed = diff[0:4] if len(diff) >= 4 else diff
 
-        try:
-            return float(trimmed)
-        except ValueError:
-            raise Exception('Could not convert difference to float: %s' % diff)
+        attempts = 0
+        while attempts < 2:
+            proc = subprocess.Popen(compare_cmd,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
+            out, err = proc.communicate()
+            print('Comparison output: %s' % err)
+            diff = err.split()[1][1:-1]
+            trimmed = diff[0:4] if len(diff) >= 4 else diff
+
+            try:
+                trimmed = float(trimmed)
+                return trimmed
+            except ValueError:
+                if attempts == 0:
+                    print('Comparison failed. Trying again..')
+                    compare_cmd = 'magick ' + compare_cmd
+                else:
+                    raise Exception('Could parse comparison output: %s' % err)
+            finally:
+                attempts += 1
 
     def _find_element(self, selector):
         if selector.startswith('//'):
