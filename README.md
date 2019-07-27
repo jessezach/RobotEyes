@@ -12,7 +12,10 @@ Uses Imagemagick to Compare Images and create a diff image. Custom Report to vie
     pip install robotframework-eyes
 ```     
 - Install `Imagemagick 6.x` (for mac: `brew install imagemagick`, linux: `apt-get install imagemagick`) <br/>
+
 -- **Important**: make sure that you check the _Install Legacy Utilities (e.g. convert)_ check mark in the installation process and that the directory to ImageMagick is in your PATH env variable. 
+
+**RobotEyes does not work with Imagemagick 7.x. Please ensure you have Imagemagick 6.x installed.**
 ## Quick-reference Usage Guide
 - Import the Library into your Robot test. E.g: <br/>    
  ```
@@ -122,7 +125,7 @@ Baseline images will be generated when tests are run the first time. Subsequent 
 For example:
 ```robotframework
 *** Settings ***
-Library    Selenium2Library
+Library    SeleniumLibrary
 Library    RobotEyes    5 (tolerance ranging between 1 to 100)
 
 *** Test Cases ***    
@@ -148,7 +151,7 @@ Library    RobotEyes    5
 For Example:
 ```robotframework
 *** Settings ***
-Library    Selenium2Library
+Library    SeleniumLibrary
 Library    RobotEyes    5
 
 *** Test Cases ***    
@@ -168,7 +171,7 @@ After that, the regular Robot Framework report will raise a failure if the compa
 ### Another test example
 ```robotframework
 *** Settings ***
-Library    Selenium2Library
+Library    SeleniumLibrary
 Library    RobotEyes    5
 # The 2nd argument is the global test tolerance (optional)
 
@@ -192,15 +195,17 @@ Sample visual regression test case  # Name of the example test case
 Tolerance is the allowed dissimilarity between images. If comparison difference is more than tolerance, the test fails.<br/>
 You can pass tolerance globally at the time of importing RobotEyes. Ex `Library RobotEyes 5`.<br/>
 Additionally you can override globaly tolerance by passing it to `Captur Element`, `Capture Fullscreen` keywords.<br/>
-Ex: `Capture Element  <locator>  tolerance=10  blur=id=test`<br/>
+Ex: 
+```Capture Element  <locator>  tolerance=10  blur=id=test```<br/>
 Tolerance should range between 1 to 100<br/>
 
 ## Blurring elements from image
 You can also blur out unwanted elements (dynamic texts etc) from image to ignore them from comparison. This can help in getting more accurate test results. You can pass a list of locators or a single locator as argument to `Capture Element` and `Capture Full Screen` keywords.<br/>
-Ex: `Capture Element  <locator>  blur=id=test`
+Ex: ```Capture Element  <locator>  blur=id=test```
 ```
     @{blur}    id=body    css=#SIvCob
-    Capture Full Screen   <locator>  blur=${blur}
+    Capture Element   <locator>  blur=${blur}
+    Capture Full Screen     blur=${blur}
 ```
 
 ## Basic Report
@@ -224,11 +229,10 @@ Run eyes server like this. `eyes --baseline=<baseline image directory> --results
 You can move selected images in a testcase by selecting images and clicking on "Baseline Images" button.</br>
 You can also move all images of test cases by selecting the test cases you want to baseline and clicking on "Baseline Images" button.</br>
 
-Note: You need to have gevent library installed in the machine to be able to use eyes server.</br>
+**Note: You need to have gevent library installed in the machine to be able to use eyes server.**</br>
 
 ## Pabot users
-Visual tests can be executed in parallel using pabot. However there may be issues with the auto-generated report after the tests have finished.
-A workaround can be to generate the report using `reportgen --baseline=<baseline images folder> --results=<results folder>` to ensure it has no discrepancies.
+Visual tests can be executed in parallel using pabot to increase the speed of execution. Generate the report using `reportgen --baseline=<baseline images folder> --results=<results folder>` after running the tests.
 
 ## Contributors:
 [Adirala Shiva](https://github.com/adiralashiva8) Contributed in creating a robotmetrics inspired reporting for RobotEyes.</br>
