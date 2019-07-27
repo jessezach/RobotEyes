@@ -11,11 +11,10 @@ Uses Imagemagick to Compare Images and create a diff image. Custom Report to vie
 ```
     pip install robotframework-eyes
 ```     
-- Install `Imagemagick 6.x` (for mac: `brew install imagemagick`, linux: `apt-get install imagemagick`) <br/>
+- Install `Imagemagick` (for mac: `brew install imagemagick`, linux: `apt-get install imagemagick`) <br/>
 
--- **Important**: make sure that you check the _Install Legacy Utilities (e.g. convert)_ check mark in the installation process and that the directory to ImageMagick is in your PATH env variable. 
+-- **Important Imagemagick7: Make sure that you check the _Install Legacy Utilities (e.g. convert, compare)_ check mark in the installation process and that the directory to ImageMagick is in your PATH env variable. Please ensure that compare.exe is in your path env variable. If you still dont see diff images being generated, please downgrade to Imagemagick6** 
 
-**RobotEyes does not work with Imagemagick 7.x. Please ensure you have Imagemagick 6.x installed.**
 ## Quick-reference Usage Guide
 - Import the Library into your Robot test. E.g: <br/>    
  ```
