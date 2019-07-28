@@ -15,9 +15,10 @@ class SeleniumHooks(object):
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
-    def capture_full_screen(self, path):
+    def capture_full_screen(self, path, blur=[], radius=50):
         self.count += 1
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.blur_regions(blur, radius, path) if blur else ''
         return self.count
 
     def capture_element(self, path, locator, blur=[], radius=50):

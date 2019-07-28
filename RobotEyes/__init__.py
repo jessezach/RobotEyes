@@ -31,10 +31,8 @@ class RobotEyes(object):
         self.browser = SeleniumHooks(lib)
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         test_name_folder = self.test_name.replace(' ', '_')
-
         # delete if directory already exist. Fresh test
         self._delete_folder_if_exists(test_name_folder)
-
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
 
@@ -42,12 +40,10 @@ class RobotEyes(object):
     def capture_full_screen(self, tolerance=None, blur=[], radius=50):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
-        count = self.browser.capture_full_screen(self.path)
-        self.browser.blur_regions(blur, radius, self.path) if blur else ''
+        count = self.browser.capture_full_screen(self.path, blur, radius)
         self._resize(self.path + '/img' + str(count) + '.png')
         key = 'img' + str(count) + '.png'
         self.stats[key] = tolerance
-
 
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None):
@@ -79,10 +75,6 @@ class RobotEyes(object):
 
         # compare actual and baseline images and save the diff image
         for filename in os.listdir(actual_path):
-            a_path = ''
-            b_path = ''
-            d_path = ''
-
             if filename.endswith('.png'):
                 b_path = os.path.join(baseline_path, filename)
                 a_path = os.path.join(actual_path, filename)
@@ -106,8 +98,6 @@ class RobotEyes(object):
                 output.write(text)
                 output.close()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
-
-
 
     def _delete_folder_if_exists(self, test_name_folder):
         actual_image_test_folder = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
