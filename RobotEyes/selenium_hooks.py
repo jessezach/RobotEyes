@@ -69,7 +69,7 @@ class SeleniumHooks(object):
             left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
             im = Image.open(path + '/img' + str(self.count) + '.png')
             cropped_image = im.crop((left, top, right, bottom))
-            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=float(radius)))
+            blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=int(radius)))
             im.paste(blurred_image, (left, top, right, bottom))
             im.save(path + '/img' + str(self.count) + '.png')
 
@@ -121,4 +121,4 @@ class SeleniumHooks(object):
             right = right * 2
             top = top * 2
             bottom = bottom * 2
-        return left, right, top, bottom
+        return int(left), int(right), int(top), int(bottom)
