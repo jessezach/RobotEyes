@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.1.1'
+version = '1.1.2'
 
 setup(name='robotframework-eyes',
       version=version,
@@ -17,7 +17,6 @@ Visual regression library and report generator for robot framework. Capture elem
       author='Jesse Zacharias',
       author_email='iamjess988@gmail.com',
       url='https://github.com/jz-jess/RobotEyes',
-      scripts=[os.path.join('scripts', 'reportgen')],
       license='MIT',
       packages=find_packages(),
       include_package_data=True,
@@ -31,6 +30,7 @@ Visual regression library and report generator for robot framework. Capture elem
       entry_points={
           'console_scripts': [
               'eyes = RobotEyes.runner:main',
+              'reportgen = RobotEyes.reportgen:report_gen'
           ]
       },
 )
