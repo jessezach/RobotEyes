@@ -3,13 +3,14 @@ import subprocess
 
 class Imagemagick(object):
 
-    def __init__(self, img1, img2):
+    def __init__(self, img1, img2, diff):
         self.img1 = img1
         self.img2 = img2
+        self.diff = diff
 
-    def compare_images(self, diff_img):
+    def compare_images(self):
         compare_cmd = 'compare -metric RMSE -subimage-search -dissimilarity-threshold 1.0 "%s" "%s" "%s"' \
-                      % (self.img1, self.img2, diff_img)
+                      % (self.img1, self.img2, self.diff)
 
         attempts = 0
         while attempts < 2:

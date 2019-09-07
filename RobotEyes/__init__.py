@@ -81,7 +81,7 @@ class RobotEyes(object):
                 d_path = os.path.join(diff_path, filename)
 
                 if os.path.exists(b_path):
-                    difference = Imagemagick(b_path, a_path).compare_images(d_path)
+                    difference = Imagemagick(b_path, a_path, d_path).compare_images()
 
                     try:
                         threshold = float(self.stats[filename])
