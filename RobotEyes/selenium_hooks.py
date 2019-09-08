@@ -3,6 +3,7 @@ import platform
 
 from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
+from selenium.common.exceptions import JavascriptException
 
 
 class SeleniumHooks(object):
@@ -24,8 +25,8 @@ class SeleniumHooks(object):
     def capture_element(self, path, locator, blur=[], radius=50):
         self.count += 1
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
-        prefix, locator, _ = self.find_element(locator)
-        coord = self._get_coordinates(prefix, locator)
+        prefix, locator, element = self.find_element(locator)
+        coord = self._get_coordinates(prefix, locator, element)
         left, right, top, bottom = self._update_coordinates(
             math.ceil(coord['left']),
             math.ceil(coord['right']),
@@ -62,8 +63,8 @@ class SeleniumHooks(object):
         selectors = selectors if isinstance(selectors, list) else [selectors]
 
         for region in selectors:
-            prefix, locator, _ = self.find_element(region)
-            area_coordinates = self._get_coordinates(prefix, locator)
+            prefix, locator, element = self.find_element(region)
+            area_coordinates = self._get_coordinates(prefix, locator, element)
             left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
             top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
             left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
@@ -96,24 +97,36 @@ class SeleniumHooks(object):
         search_element = func(locator)
         return prefix, locator, search_element
 
-    def _get_coordinates(self, prefix, locator):
+    def _get_coordinates(self, prefix, locator, element):
         if prefix.lower() == 'xpath':
             locator = locator.replace('"', "'")
             cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
                   ".singleNodeValue;return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
+
         elif prefix.lower() == 'css':
             locator = locator.replace('"', "'")
             cmd = "var e = document.querySelector(\"{0}\");return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
+
         elif prefix.lower() == 'id':
             cmd = "var e = document.getElementById(\"{0}\");return e.getBoundingClientRect();".format(locator)
-            coord = self.driver.execute_script(cmd)
+
         elif prefix.lower() == 'class':
             cmd = "var e = document.getElementsByClassName(\"{0}\")[0];return e.getBoundingClientRect();" \
                 .format(locator)
-            coord = self.driver.execute_script(cmd)
-        return coord
+        else:
+            raise Exception('Invalid locator %s' % locator)
+
+        try:
+            coordinates = self.driver.execute_script(cmd)
+        except JavascriptException:
+            coordinates = {}
+            location = element.location
+            size = element.size
+            coordinates['left'] = location['x']
+            coordinates['top'] = location['y']
+            coordinates['right'] = location['x'] + size['width']
+            coordinates['bottom'] = location['y'] + size['height']
+        return coordinates
 
     def _update_coordinates(self, left, right, top, bottom):
         if platform.system().lower() == "darwin":
