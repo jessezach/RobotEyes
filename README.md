@@ -215,6 +215,9 @@ You can generate report by running the following command.</br>
     reportgen --baseline=<baseline image folder> --results=<results folder>
 ```
 
+**Important: If you want to remotely view the report on Jenkins, you might need to update the CSP setting,
+Refer:** https://wiki.jenkins.io/display/JENKINS/Configuring+Content+Security+Policy#ConfiguringContentSecurityPolicy-HTMLPublisherPlugin
+
 ## Interactive Report
 Robot Eyes generates a report automatically after all tests have been executed. However a more interactive and intuitive flask based report is available.<br/>
 
