@@ -12,7 +12,13 @@ class SeleniumHooks(object):
     def __init__(self, lib):
         try:
             s2l = BuiltIn().get_library_instance(lib)
-            self.driver = s2l._current_application() if lib == 'AppiumLibrary' else s2l._current_browser()
+            if lib == 'AppiumLibrary':
+                self.driver = s2l._current_application()
+            else:
+                try:
+                    self.driver = s2l.driver #SeleniumLibrary v4
+                except:
+                    self.driver = s2l._current_browser() #SeleniumLibrary v4--
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
