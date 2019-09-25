@@ -17,7 +17,10 @@ class SeleniumHooks(object):
                 self.driver = s2l._current_application()
                 self.mobile = True
             else:
-                self.driver = s2l._current_browser()
+                try:
+                    self.driver = s2l.driver #SeleniumLibrary v4
+                except:
+                    self.driver = s2l._current_browser() #SeleniumLibrary v4--
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
