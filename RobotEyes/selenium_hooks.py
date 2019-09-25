@@ -8,12 +8,14 @@ from selenium.common.exceptions import JavascriptException
 
 class SeleniumHooks(object):
     count = 0
+    mobile = False
 
     def __init__(self, lib):
         try:
             s2l = BuiltIn().get_library_instance(lib)
             if lib == 'AppiumLibrary':
                 self.driver = s2l._current_application()
+                self.mobile = True
             else:
                 try:
                     self.driver = s2l.driver #SeleniumLibrary v4
@@ -46,7 +48,7 @@ class SeleniumHooks(object):
         im.save(path + '/img' + str(self.count) + '.png')
         return self.count
 
-    def capture_mobile_element(self, selector, path):
+    def capture_mobile_element(self, selector, path, blur=[], radius=50):
         self.count += 1
         prefix, locator, search_element = self.find_element(selector)
         location = search_element.location
@@ -56,6 +58,7 @@ class SeleniumHooks(object):
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
+        self.blur_regions(blur, radius, path) if blur else ''
         image = Image.open(path + '/img' + str(self.count) + '.png')
         image = image.crop((left, top, right, bottom))
         image.save(path + '/img' + str(self.count) + '.png')
@@ -104,34 +107,41 @@ class SeleniumHooks(object):
         return prefix, locator, search_element
 
     def _get_coordinates(self, prefix, locator, element):
-        if prefix.lower() == 'xpath':
-            locator = locator.replace('"', "'")
-            cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
-                  ".singleNodeValue;return e.getBoundingClientRect();".format(locator)
-
-        elif prefix.lower() == 'css':
-            locator = locator.replace('"', "'")
-            cmd = "var e = document.querySelector(\"{0}\");return e.getBoundingClientRect();".format(locator)
-
-        elif prefix.lower() == 'id':
-            cmd = "var e = document.getElementById(\"{0}\");return e.getBoundingClientRect();".format(locator)
-
-        elif prefix.lower() == 'class':
-            cmd = "var e = document.getElementsByClassName(\"{0}\")[0];return e.getBoundingClientRect();" \
-                .format(locator)
+        if self.mobile:
+            coordinates = self._get_coordinates_from_driver(element)
         else:
-            raise Exception('Invalid locator %s' % locator)
+            if prefix.lower() == 'xpath':
+                locator = locator.replace('"', "'")
+                cmd = "var e = document.evaluate(\"{0}\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)" \
+                      ".singleNodeValue;return e.getBoundingClientRect();".format(locator)
 
-        try:
-            coordinates = self.driver.execute_script(cmd)
-        except JavascriptException:
-            coordinates = {}
-            location = element.location
-            size = element.size
-            coordinates['left'] = location['x']
-            coordinates['top'] = location['y']
-            coordinates['right'] = location['x'] + size['width']
-            coordinates['bottom'] = location['y'] + size['height']
+            elif prefix.lower() == 'css':
+                locator = locator.replace('"', "'")
+                cmd = "var e = document.querySelector(\"{0}\");return e.getBoundingClientRect();".format(locator)
+
+            elif prefix.lower() == 'id':
+                cmd = "var e = document.getElementById(\"{0}\");return e.getBoundingClientRect();".format(locator)
+
+            elif prefix.lower() == 'class':
+                cmd = "var e = document.getElementsByClassName(\"{0}\")[0];return e.getBoundingClientRect();" \
+                    .format(locator)
+            else:
+                raise Exception('Invalid locator %s' % locator)
+
+            try:
+                coordinates = self.driver.execute_script(cmd)
+            except JavascriptException:
+                coordinates = self._get_coordinates_from_driver(element)
+        return coordinates
+
+    def _get_coordinates_from_driver(self, element):
+        coordinates = {}
+        location = element.location
+        size = element.size
+        coordinates['left'] = location['x']
+        coordinates['top'] = location['y']
+        coordinates['right'] = location['x'] + size['width']
+        coordinates['bottom'] = location['y'] + size['height']
         return coordinates
 
     def _update_coordinates(self, left, right, top, bottom):
