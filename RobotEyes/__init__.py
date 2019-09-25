@@ -46,9 +46,9 @@ class RobotEyes(object):
         self.stats[key] = tolerance
 
     # Captures a specific region in a mobile screen
-    def capture_mobile_element(self, selector, tolerance=None):
+    def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50):
         tolerance = float(tolerance) if tolerance else self.tolerance
-        count = self.browser.capture_mobile_element(selector, self.path)
+        count = self.browser.capture_mobile_element(selector, self.path, blur, radius)
         key = 'img' + str(count) + '.png'
         self.stats[key] = tolerance
 
