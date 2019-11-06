@@ -20,16 +20,15 @@ class Imagemagick(object):
             out, err = proc.communicate()
             print('Comparison output: %s' % err)
             diff = err.split()[1][1:-1]
-            trimmed = diff[0:4] if len(diff) >= 4 else diff
 
             try:
-                trimmed = float(trimmed)
+                trimmed = float("{:.2f}".format(float(diff)))
                 return trimmed
             except ValueError:
                 if attempts == 0:
-                    print('Comparison failed. Trying again..')
+                    print('Comparison failed first time. Output %s' % err)
                     compare_cmd = 'magick ' + compare_cmd
                 else:
-                    raise Exception('Could parse comparison output: %s' % err)
+                    raise Exception('Could not parse comparison output: %s' % err)
             finally:
                 attempts += 1
