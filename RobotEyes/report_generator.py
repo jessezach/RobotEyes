@@ -1,8 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from time import sleep
 
 
 def generate_report(baseline_folder, report_path, img_path):
+    sleep(1)
     html = '''
     <html>
     <head>
