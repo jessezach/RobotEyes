@@ -4,6 +4,7 @@ import platform
 from PIL import Image, ImageFilter
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.common.exceptions import JavascriptException
+from selenium.common.exceptions import NoSuchElementException
 
 
 class SeleniumHooks(object):
@@ -72,7 +73,10 @@ class SeleniumHooks(object):
         selectors = selectors if isinstance(selectors, list) else [selectors]
 
         for region in selectors:
-            prefix, locator, element = self.find_element(region)
+            try:
+                prefix, locator, element = self.find_element(region)
+            except NoSuchElementException:
+                continue
             area_coordinates = self._get_coordinates(prefix, locator, element)
             left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
             top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
