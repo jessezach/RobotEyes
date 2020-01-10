@@ -22,14 +22,14 @@ class RobotEyes(object):
     ROBOT_LISTENER_API_VERSION = 2
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
-    def __init__(self, tolerance=0):
-        self.tolerance = float(tolerance)
-        self.tolerance = self.tolerance/100 if self.tolerance >= 1 else self.tolerance
-        self.stats = {}
-        self.fail = False
+    def __init__(self):
         self.ROBOT_LIBRARY_LISTENER = self
 
-    def open_eyes(self, lib='SeleniumLibrary'):
+    def open_eyes(self, lib='SeleniumLibrary', tolerance=0):
+        self.tolerance = float(tolerance)
+        self.tolerance = self.tolerance / 100 if self.tolerance >= 1 else self.tolerance
+        self.stats = {}
+        self.fail = False
         self.baseline_dir = self._get_baseline_dir()
         self.output_dir = self._output_dir()
         self.images_base_folder = os.path.join(self.output_dir, IMAGES_FOLDER)
@@ -172,6 +172,6 @@ class RobotEyes(object):
     def _close(self):
         thread = Thread(
             target=generate_report,
-            args=(self.baseline_dir,os.path.join(self.output_dir, 'output.xml'), self.images_base_folder, )
+            args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), self.images_base_folder, )
         )
         thread.start()
