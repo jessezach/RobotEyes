@@ -22,7 +22,8 @@ class RobotEyes(object):
     ROBOT_LISTENER_API_VERSION = 2
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
-    def __init__(self):
+    # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
+    def __init__(self, tolerance=0):
         self.ROBOT_LIBRARY_LISTENER = self
 
     def open_eyes(self, lib='SeleniumLibrary', tolerance=0):
