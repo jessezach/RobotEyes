@@ -1,6 +1,7 @@
 from datetime import datetime
 import shutil
 import time
+from threading import Thread
 
 from PIL import Image
 from robot.libraries.BuiltIn import BuiltIn
@@ -9,6 +10,7 @@ from .constants import *
 from .report_utils import *
 from .imagemagick import Imagemagick
 from .selenium_hooks import SeleniumHooks
+from .report_generator import generate_report
 
 
 class RobotEyes(object):
@@ -17,14 +19,18 @@ class RobotEyes(object):
     test_name = ''
     baseline_dir = ''
     browser = None
+    ROBOT_LISTENER_API_VERSION = 2
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
 
+    # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
     def __init__(self, tolerance=0):
+        self.ROBOT_LIBRARY_LISTENER = self
+
+    def open_eyes(self, lib='SeleniumLibrary', tolerance=0):
         self.tolerance = float(tolerance)
-        self.tolerance = self.tolerance/100 if self.tolerance >= 1 else self.tolerance
+        self.tolerance = self.tolerance / 100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
         self.fail = False
-
-    def open_eyes(self, lib='SeleniumLibrary'):
         self.baseline_dir = self._get_baseline_dir()
         self.output_dir = self._output_dir()
         self.images_base_folder = os.path.join(self.output_dir, IMAGES_FOLDER)
@@ -155,9 +161,18 @@ class RobotEyes(object):
         return color, result
 
     def _get_baseline_dir(self):
-        baseline_dir = BuiltIn().replace_variables('${images_dir}')
-        if baseline_dir is None:
+        try:
+            baseline_dir = BuiltIn().get_variable_value('${images_dir}')
+        except:
             raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
+
         baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
+
+    def _close(self):
+        thread = Thread(
+            target=generate_report,
+            args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), self.images_base_folder, )
+        )
+        thread.start()

@@ -23,39 +23,25 @@ Uses Imagemagick to Compare Images and create a diff image. Custom Report to vie
 - Call the `Open Eyes` keyword after opening the browser in your selenium test.
 - Use the `Capture Full Screen` and `Capture Element` keywords to capture images.
 - Call the `Compare Images` keyword at the end of the test to compare all the images captured in the respective test.
-- Once done running the tests, execute the report generator script and pass the path to output directory to generate report manually. Eg:<br/>
+- Once done running the tests, report with name `visualReport.html` should be generated at the root of the project
+- You can manually generate the report by running the below command. Eg:<br/>
 ```
     reportgen --baseline=<baseline image directory> --results=<output directory>
 ``` 
-- A custom report will be generated at the root of your project. 
 ## Usage Guide
 This guide contains the suggested steps to efficently integrate `RobotEyes` library into your Robot Framework test development workflow.<br/>
 It also serves as documentation to clarify how this library functions on a high level.
 
 ## Keyword Documentation
-- `Open Eyes`:<br/>
-Arguments: library. E.g. AppiumLibrary (optional).<br/> 
-Gets current selenium/appium instance.<br/>
+| Keyword                | Arguments                        | Comments                                                                                    |
+|------------------------|----------------------------------|---------------------------------------------------------------------------------------------|
+| Open Eyes              | lib, tolerance                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5`                                                |
+| Capture Full Screen    | tolerance, blur, radius          | Ex `capture full screen  tolerance=5  blur=<array of locators>` radius=50(thickness of blur) |
+| Capture Element        | locator, tolerance, blur, radius |                                                                                             |
+| Capture Mobile Element | locator, tolerance, blur, radius |                                                                                             |
+| Scroll To Element      | locator                          | Ex `scroll to element  id=user`                                                             |
+| Compare Images         |                                  | Compares all the images captured in the test with their respective base image               |
 
-- `Capture Full Screen`:<br/>
-Arguments: tolerance, blur (array of locators to blur, optional), radius(thickness of blur, optional).<br/>
-Captures the entire screen.<br/>
-
-- `Capture Element`:<br/>
-Arguments: locator, blur(array of locators to blur, optional), radius(thickness of blur, optional).<br/>
-Captures a region or an individual element in a webpage.<br/>
-
-- `Capture Mobile Element`:<br/>
-Arguments: locator.<br/>
-Captures a region or an individual element in a mobile screen.<br/>
-
-- `Scroll To Element`:<br/>
-Arguments: locator.<br/>
-Scrolls to an element in a webpage.<br/>
-
-- `Compare Images`:<br/>
-Arguments: None<br/>
-Compares **all** the `actual` images of a test case against the `baseline` images<br/>
 ### Running Tests ###
 `robot -d results -v images_dir:<baseline_images_directory> tests`<br/>
 If baseline image directory does not exist, RobotEyes will create it.
@@ -125,13 +111,13 @@ For example:
 ```robotframework
 *** Settings ***
 Library    SeleniumLibrary
-Library    RobotEyes    5 (tolerance ranging between 1 to 100)
+Library    RobotEyes
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
     Open Browser    https://www.google.com/    chrome
     Maximize Browser Window
-    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Open Eyes    SeleniumLibrary(AppiumLibrary)  5
     Wait Until Element Is Visible    id=lst-ib
     Capture Full Screen
     Compare Images
@@ -141,7 +127,7 @@ Sample visual regression test case  # Name of the example test case
 To compare the images, the following needs to exist in the TC's code:
 - Library declaration:
 ```robotframework
-Library    RobotEyes    5
+Library    RobotEyes
 ```
 - The `Open Eyes` keyword after the `Open Browser` keyword.
 - Any of the image capture keywords. E.g `Capture Full Screen`
@@ -151,13 +137,13 @@ For Example:
 ```robotframework
 *** Settings ***
 Library    SeleniumLibrary
-Library    RobotEyes    5
+Library    RobotEyes
 
 *** Test Cases ***    
 Sample visual regression test case  # Name of the example test case
     Open Browser    https://www.google.com/    chrome
     Maximize Browser Window
-    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Open Eyes    SeleniumLibrary  5
     Wait Until Element Is Visible    id=lst-ib
     Capture Full Screen
     Compare Images
@@ -171,8 +157,7 @@ After that, the regular Robot Framework report will raise a failure if the compa
 ```robotframework
 *** Settings ***
 Library    SeleniumLibrary
-Library    RobotEyes    5
-# The 2nd argument is the global test tolerance (optional)
+Library    RobotEyes
 
 *** Variables ***
 @{blur}    id=body    css=#SIvCob
@@ -181,7 +166,7 @@ Library    RobotEyes    5
 Sample visual regression test case  # Name of the example test case
     Open Browser    https://www.google.com/    chrome
     Maximize Browser Window
-    Open Eyes    SeleniumLibrary  # Use the selenium library as the argument E.g. AppiumLibrary or SeleniumLibrary
+    Open Eyes    SeleniumLibrary  5
     Wait Until Element Is Visible    id=lst-ib
     # Below, the optional arguments are the tolerance to override global value, the regions to blur in the image and
     # the thickness of the blur (radius of Gaussian blur applied to the regions) 
@@ -192,10 +177,10 @@ Sample visual regression test case  # Name of the example test case
 ```
 ## Tolerance
 Tolerance is the allowed dissimilarity between images. If comparison difference is more than tolerance, the test fails.<br/>
-You can pass tolerance globally at the time of importing RobotEyes. Ex `Library RobotEyes 5`.<br/>
-Additionally you can override globaly tolerance by passing it to `Captur Element`, `Capture Fullscreen` keywords.<br/>
+You can pass tolerance globally to the `open eyes` keyword. Ex `Open Eyes  lib=SeleniumLibrary  tolerance=5`.<br/>
+Additionally you can override global tolerance by passing it to `Capture Element`, `Capture Fullscreen` keywords.<br/>
 Ex: 
-```Capture Element  <locator>  tolerance=10  blur=id=test```<br/>
+```Capture Element  <locator>  tolerance=10  blur=${locators}```<br/>
 Tolerance should range between 1 to 100<br/>
 
 ## Blurring elements from image
@@ -210,7 +195,7 @@ Ex: ```Capture Element  <locator>  blur=id=test```
 ## Basic Report
 ![Alt text](/basicreport.png "Basic Report")
 
-You can generate report by running the following command.</br>
+Basic report should be autogenerated after execution (not supported for pabot). Alternatively, you can generate report by running the following command.</br>
 ```
     reportgen --baseline=<baseline image folder> --results=<results folder>
 ```
