@@ -97,17 +97,22 @@ class SeleniumHooks(object):
         while (currentWindow !== window.top) { \
             currentParentWindow = currentWindow.parent; \
             for (let idx = 0; idx < currentParentWindow.frames.length; idx++) { \
-            if (currentParentWindow.frames[idx] === currentWindow) { \
-                for (let frameElement of currentParentWindow.document.getElementsByTagName("frame")) { \
-                if (frameElement.contentWindow === currentWindow) { \
-                    rect = frameElement.getBoundingClientRect(); \
-                    positions.push({x: rect.x, y: rect.y}); \
-                    console.log("x: " + rect.x + " y: " + rect.y) \
+                if (currentParentWindow.frames[idx] === currentWindow) { \
+                    for (let frameElement of currentParentWindow.document.getElementsByTagName("frame")) { \
+                        if (frameElement.contentWindow === currentWindow) { \
+                            rect = frameElement.getBoundingClientRect(); \
+                            positions.push({x: rect.x, y: rect.y}); \
+                        } \
+                    } \
+                    for (let frameElement of currentParentWindow.document.getElementsByTagName("iframe")) { \
+                        if (frameElement.contentWindow === currentWindow) { \
+                            rect = frameElement.getBoundingClientRect(); \
+                            positions.push({x: rect.x, y: rect.y}); \
+                        } \
+                    } \
+                    currentWindow = currentParentWindow; \
+                    break; \
                 } \
-                } \
-                currentWindow = currentParentWindow; \
-                break; \
-            } \
             } \
         } \
         return positions.reduce((accumulator, currentValue) => { \
