@@ -77,15 +77,52 @@ class SeleniumHooks(object):
                 prefix, locator, element = self.find_element(region)
             except NoSuchElementException:
                 continue
-            area_coordinates = self._get_coordinates(prefix, locator, element)
-            left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
-            top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
+            area_coordinates = self._get_coordinates_from_driver(element)
+            frame_abs_pos = self._get_current_frame_abs_position()
+            left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(area_coordinates['right'] + frame_abs_pos['x'])
+            top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(area_coordinates['bottom'] + frame_abs_pos['y'])
             left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
             im = Image.open(path + '/img' + str(self.count) + '.png')
             cropped_image = im.crop((left, top, right, bottom))
             blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=int(radius)))
             im.paste(blurred_image, (left, top, right, bottom))
             im.save(path + '/img' + str(self.count) + '.png')
+
+    def _get_current_frame_abs_position(self):
+        cmd = 'function currentFrameAbsolutePosition() { \
+        let currentWindow = window; \
+        let currentParentWindow; \
+        let positions = []; \
+        let rect;  \
+        while (currentWindow !== window.top) { \
+            currentParentWindow = currentWindow.parent; \
+            for (let idx = 0; idx < currentParentWindow.frames.length; idx++) { \
+            if (currentParentWindow.frames[idx] === currentWindow) { \
+                for (let frameElement of currentParentWindow.document.getElementsByTagName("frame")) { \
+                if (frameElement.contentWindow === currentWindow) { \
+                    rect = frameElement.getBoundingClientRect(); \
+                    positions.push({x: rect.x, y: rect.y}); \
+                    console.log("x: " + rect.x + " y: " + rect.y) \
+                } \
+                } \
+                currentWindow = currentParentWindow; \
+                break; \
+            } \
+            } \
+        } \
+        return positions.reduce((accumulator, currentValue) => { \
+            return { \
+            x: accumulator.x + currentValue.x, \
+            y: accumulator.y + currentValue.y \
+            }; \
+        }, { x: 0, y: 0 }); \
+        }; return currentFrameAbsolutePosition();'
+
+        try:
+            coordinates = self.driver.execute_script(cmd)
+        except JavascriptException:
+            coordinates = {"x": 0, "y": 0}
+        return coordinates
 
     def find_element(self, selector):
         if selector.startswith('//'):
@@ -136,6 +173,7 @@ class SeleniumHooks(object):
                 coordinates = self.driver.execute_script(cmd)
             except JavascriptException:
                 coordinates = self._get_coordinates_from_driver(element)
+            
         return coordinates
 
     def _get_coordinates_from_driver(self, element):
