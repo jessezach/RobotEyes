@@ -32,13 +32,14 @@ class SeleniumHooks(object):
         self.count += 1
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
         if blur:
-            initial_frame = self.driver.execute_script("return window.frameElement")
             self.blur_regions(blur, radius, path)
-            self.driver.switch_to.default_content()
-            self.blur_in_all_frames(blur, radius, path)
-            self.driver.switch_to.default_content()
-            print("Switching back to initial frame and name is %s" % initial_frame)
-            self.driver.switch_to.frame(initial_frame)
+            if not self.is_mobile():
+                initial_frame = self.driver.execute_script("return window.frameElement")
+                self.driver.switch_to.default_content()
+                self.blur_in_all_frames(blur, radius, path)
+                self.driver.switch_to.default_content()
+                print("Switching back to initial frame and name is %s" % initial_frame)
+                self.driver.switch_to.frame(initial_frame)
 
         return self.count
 
