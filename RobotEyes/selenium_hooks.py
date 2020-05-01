@@ -25,6 +25,9 @@ class SeleniumHooks(object):
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
+    def is_mobile(self):
+        return self.mobile
+
     def capture_full_screen(self, path, blur=[], radius=50):
         self.count += 1
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')

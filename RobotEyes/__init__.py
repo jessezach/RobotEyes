@@ -47,7 +47,10 @@ class RobotEyes(object):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
         count = self.browser.capture_full_screen(self.path, blur, radius)
-        self._resize(self.path + '/img' + str(count) + '.png')
+        if self.browser.is_mobile():
+            self._fix_base_image_size(self.path + '/img' + str(count) + '.png', count)
+        else:
+            self._resize(self.path + '/img' + str(count) + '.png')
         key = 'img' + str(count) + '.png'
         self.stats[key] = tolerance
 
@@ -131,6 +134,21 @@ class RobotEyes(object):
             img = Image.open(arg)
             img = img.resize((1024, 700), Image.ANTIALIAS)
             img.save(arg)
+
+    def _fix_base_image_size(self, path, count):
+        test_name = self.test_name.replace(' ', '_')
+        image_name = 'img' + str(count) + '.png'
+        base_image = os.path.join(self.baseline_dir, test_name, image_name)
+        if os.path.exists(base_image):
+            im = Image.open(path)
+            width, height = im.size
+            im.close()
+
+            im = Image.open(base_image)
+            b_width, b_height = im.size
+            if width != b_width or height != b_height:
+                im = im.resize((width, height), Image.ANTIALIAS)
+                im.save(base_image)
 
     def _delete_report_if_old(self, path):
         t1 = datetime.fromtimestamp(os.path.getmtime(path))
