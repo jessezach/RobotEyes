@@ -28,24 +28,27 @@ class SeleniumHooks(object):
     def capture_full_screen(self, path, blur=[], radius=50):
         self.count += 1
         self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
-        if blur :
-            initial_frame = self.driver.execute_script("return self.name")
-            self.driver.switch_to_default_content()
+        if blur:
+            initial_frame = self.driver.execute_script("return window.frameElement")
+            self.blur_regions(blur, radius, path)
+            self.driver.switch_to.default_content()
             self.blur_in_all_frames(blur, radius, path)
-            self.driver.switch_to_default_content()
-            self.driver.switch_to_frame(initial_frame)
+            self.driver.switch_to.default_content()
+            print("Switching back to initial frame and name is %s" % initial_frame)
+            self.driver.switch_to.frame(initial_frame)
 
         return self.count
 
     def blur_in_all_frames(self, blur, radius, path):
         frames = self.driver.find_elements_by_tag_name("frame")
         iframes = self.driver.find_elements_by_tag_name("iframe")
-        joinedList = frames + iframes
-
-        for index, frame in enumerate(joinedList):
+        joined_list = frames + iframes
+        print("Frames: %s" % str(len(joined_list)))
+        for index, frame in enumerate(joined_list):
+            print("Switching to Frame %s" % frame)
             self.driver.switch_to.frame(frame)
             self.blur_regions(blur, radius, path)
-            self.driver.switch_to_default_content()
+            self.driver.switch_to.default_content()
 
     def capture_element(self, path, locator, blur=[], radius=50):
         self.count += 1
