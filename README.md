@@ -224,7 +224,7 @@ Visual tests can be executed in parallel using pabot to increase the speed of ex
 ## Contributors:
 [Adirala Shiva](https://github.com/adiralashiva8) Contributed in creating a robotmetrics inspired reporting for RobotEyes.</br>
 [DiegoSanchezE](https://github.com/DiegoSanchezE) Added major improvements in the ReadMe.</br>
-[Priya](https://www.linkedin.com/in/priyamarimuthu) Contributes by testing and finding bugs/improvements before every release.
+[Priya](https://www.linkedin.com/in/priyamarimuthu) Contributes by testing and finding bugs/improvements before every release.</br>
 [Ciaran Doheny](ciaran@flipdish.ie) Actively testing and suggesting improvements.
 
 ## Note
