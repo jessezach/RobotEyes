@@ -101,9 +101,17 @@ class SeleniumHooks(object):
                 continue
 
             area_coordinates = self._get_coordinates_from_driver(element)
-            frame_abs_pos = self._get_current_frame_abs_position()
-            left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(area_coordinates['right'] + frame_abs_pos['x'])
-            top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(area_coordinates['bottom'] + frame_abs_pos['y'])
+
+            if self.is_mobile():
+                left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
+                top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
+            else:
+                frame_abs_pos = self._get_current_frame_abs_position()
+                left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(
+                    area_coordinates['right'] + frame_abs_pos['x'])
+                top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(
+                    area_coordinates['bottom'] + frame_abs_pos['y'])
+
             left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
             im = Image.open(path + '/img' + str(self.count) + '.png')
             cropped_image = im.crop((left, top, right, bottom))
