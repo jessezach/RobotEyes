@@ -30,7 +30,7 @@ class SeleniumHooks(object):
 
     def capture_full_screen(self, path, blur=[], radius=50):
         self.count += 1
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(path + os.path.sep + 'img' + str(self.count) + '.png')
         if blur:
             self.blur_regions(blur, radius, path)
             if not self.is_mobile():
@@ -56,7 +56,7 @@ class SeleniumHooks(object):
 
     def capture_element(self, path, locator, blur=[], radius=50):
         self.count += 1
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(path + os.path.sep + 'img' + str(self.count) + '.png')
         prefix, locator, element = self.find_element(locator)
         coord = self._get_coordinates(prefix, locator, element)
         left, right, top, bottom = self._update_coordinates(
@@ -66,10 +66,10 @@ class SeleniumHooks(object):
             math.ceil(coord['bottom'])
         )
         self.blur_regions(blur, radius, path) if blur else ''
-        im = Image.open(path + '/img' + str(self.count) + '.png')
+        im = Image.open(path + os.path.sep + 'img' + str(self.count) + '.png')
         im = im.crop((left, top, right, bottom))
         im.resize((1024, 700), Image.ANTIALIAS)
-        im.save(path + '/img' + str(self.count) + '.png')
+        im.save(path + os.path.sep + 'img' + str(self.count) + '.png')
         return self.count
 
     def capture_mobile_element(self, selector, path, blur=[], radius=50):
@@ -77,15 +77,17 @@ class SeleniumHooks(object):
         prefix, locator, search_element = self.find_element(selector)
         location = search_element.location
         size = search_element.size
-        self.driver.save_screenshot(path + '/img' + str(self.count) + '.png')
+        self.driver.save_screenshot(
+            path + os.path.sep + 'img' + str(self.count) + '.png')
         left = location['x']
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
         self.blur_regions(blur, radius, path) if blur else ''
-        image = Image.open(path + '/img' + str(self.count) + '.png')
+        image = Image.open(path + os.path.sep + 'img' +
+                           str(self.count) + '.png')
         image = image.crop((left, top, right, bottom))
-        image.save(path + '/img' + str(self.count) + '.png')
+        image.save(path + os.path.sep + 'img' + str(self.count) + '.png')
         return self.count
 
     def scroll_to_element(self, selector):
@@ -113,11 +115,12 @@ class SeleniumHooks(object):
                     area_coordinates['bottom'] + frame_abs_pos['y'])
 
             left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
-            im = Image.open(path + '/img' + str(self.count) + '.png')
+            im = Image.open(path + os.path.sep + 'img' +
+                            str(self.count) + '.png')
             cropped_image = im.crop((left, top, right, bottom))
             blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=int(radius)))
             im.paste(blurred_image, (left, top, right, bottom))
-            im.save(path + '/img' + str(self.count) + '.png')
+            im.save(path + os.path.sep + 'img' + str(self.count) + '.png')
 
     def _get_current_frame_abs_position(self):
         cmd = 'function currentFrameAbsolutePosition() { \
@@ -209,7 +212,7 @@ class SeleniumHooks(object):
                 coordinates = self.driver.execute_script(cmd)
             except JavascriptException:
                 coordinates = self._get_coordinates_from_driver(element)
-            
+
         return coordinates
 
     def _get_coordinates_from_driver(self, element):

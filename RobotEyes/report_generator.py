@@ -57,7 +57,7 @@ def generate_report(baseline_folder, report_path, img_path):
         </thead>
         <tbody>''' % (folder_name, test_name, folder_name)
 
-        for filename in os.listdir(baseline_folder + '/' + folder_name):
+        for filename in os.listdir(baseline_folder + os.path.sep + folder_name):
             if filename.endswith('.png'):
                 html += '''<tr>'''
                 if os.path.exists(os.path.join(baseline_folder, folder_name, filename)):
@@ -81,17 +81,20 @@ def generate_report(baseline_folder, report_path, img_path):
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
                             % (diff_img_path, diff_img_path)
 
-                elif os.path.exists(img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'):
-                    diff_img_path = img_path + '/diff/' + folder_name + '/' + arr[0] + '-0.png'
+                elif os.path.exists(img_path + os.path.sep + 'diff' + os.path.sep + folder_name + os.path.sep + arr[0] + '-0.png'):
+                    diff_img_path = img_path + os.path.sep +'diff' + os.path.sep + \
+                        folder_name + os.path.sep + arr[0] + '-0.png'
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
                             % (diff_img_path, diff_img_path)
 
                 else:
                     html += '''<td></td>'''
 
-                txt_file = img_path + '/actual/' + folder_name + '/' + filename + ".txt"
+                txt_file = img_path + os.path.sep + 'actual' + os.path.sep + \
+                    folder_name + os.path.sep + filename + ".txt"
                 if os.path.exists(txt_file):
-                    infile = open(img_path + '/actual/' + folder_name + '/' + filename + ".txt", 'r')
+                    infile = open(img_path + os.path.sep + 'actual' + os.path.sep + folder_name +
+                                  os.path.sep + filename + ".txt", 'r')
                     first_line = infile.readline().strip()
                     arr = first_line.split()
                     infile.close()
@@ -140,7 +143,7 @@ def generate_report(baseline_folder, report_path, img_path):
              pass = pass + 1;
             }
           });
-          
+
           $("tr.accordion-toggle").click(function () {
             classes = {
                 "fa-arrow-down": "fa-arrow-right",
@@ -149,7 +152,7 @@ def generate_report(baseline_folder, report_path, img_path):
             cls = $(this).find('i:first').attr("class").split(" ")[1];
             $(this).find('i:first').removeClass(cls).addClass(classes[cls]);
           });
-          
+
           Highcharts.chart('piechart', {
             chart: {
                 type: 'pie',
@@ -200,6 +203,6 @@ def generate_report(baseline_folder, report_path, img_path):
     </html>'''
 
     print("Creating visual report at %s/visualReport.html" % os.getcwd())
-    output = open(os.getcwd() + '/visualReport.html', 'w')
+    output = open(os.getcwd() + os.path.sep + 'visualReport.html', 'w')
     output.write(html)
     output.close()

@@ -48,9 +48,10 @@ class RobotEyes(object):
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
         count = self.browser.capture_full_screen(self.path, blur, radius)
         if self.browser.is_mobile():
-            self._fix_base_image_size(self.path + '/img' + str(count) + '.png', count)
+            self._fix_base_image_size(
+                self.path + os.path.sep + 'img' + str(count) + '.png', count)
         else:
-            self._resize(self.path + '/img' + str(count) + '.png')
+            self._resize(self.path + os.path.sep + 'img' + str(count) + '.png')
         key = 'img' + str(count) + '.png'
         self.stats[key] = tolerance
 
@@ -103,7 +104,7 @@ class RobotEyes(object):
                     shutil.copy(a_path, b_path)
                     text = '%s %s' % ('None', 'green')
 
-                output = open(actual_path + '/' + filename + '.txt', 'w')
+                output = open(actual_path + os.path.sep + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
@@ -160,7 +161,7 @@ class RobotEyes(object):
         output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
 
         if 'pabot_results' in output_dir:
-            index = output_dir.find('/pabot_results')
+            index = output_dir.find(os.path.sep + 'pabot_results')
             return output_dir[:index]
         return output_dir
 
