@@ -228,5 +228,8 @@ Visual tests can be executed in parallel using pabot to increase the speed of ex
 [Ciaran Doheny](ciaran@flipdish.ie) Actively testing and suggesting improvements.
 
 ## Note
-If you find this library useful, please do star the repository.<br/> 
+If you find this library useful, you can support me by down the following:<br/> 
+    - Star the repository.<br/>
+    - Make a small donation via [Paypal](https://paypal.me/jessezach). You can request for features and I will prioritise them for you.</br>
+
 For any issue, feature request or clarification feel free to raise an issue in github or email me at iamjess988@gmail.com
