@@ -193,6 +193,9 @@ class RobotEyes(object):
         except:
             raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
 
+        if not baseline_dir:
+            raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
+
         baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
