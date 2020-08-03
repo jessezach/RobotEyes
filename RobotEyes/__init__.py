@@ -41,34 +41,44 @@ class RobotEyes(object):
         self._delete_folder_if_exists(test_name_folder)
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
+        self.count = 1
 
     # Captures full screen
-    def capture_full_screen(self, tolerance=None, blur=[], radius=50):
+    def capture_full_screen(self, tolerance=None, blur=[], radius=50, name=None):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
-        count = self.browser.capture_full_screen(self.path, blur, radius)
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
+        self.browser.capture_full_screen(path, blur, radius)
         if self.browser.is_mobile():
-            self._fix_base_image_size(self.path + '/img' + str(count) + '.png', count)
+            self._fix_base_image_size(path, name)
         else:
-            self._resize(self.path + '/img' + str(count) + '.png')
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+            self._resize(path)
+
+        self.stats[name] = tolerance
+        self.count += 1
 
     # Captures a specific region in a mobile screen
-    def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50):
+    def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50, name=None):
         tolerance = float(tolerance) if tolerance else self.tolerance
-        count = self.browser.capture_mobile_element(selector, self.path, blur, radius)
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
+        self.browser.capture_mobile_element(selector, path, blur, radius)
+        self.stats[name] = tolerance
+        self.count += 1
 
     # Captures a specific region in a webpage
-    def capture_element(self, selector, tolerance=None, blur=[], radius=50):
+    def capture_element(self, selector, tolerance=None, blur=[], radius=50, name=None):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
         time.sleep(1)
-        count = self.browser.capture_element(self.path, selector, blur, radius)
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+        count = self.browser.capture_element(path, selector, blur, radius)
+        self.stats[name] = tolerance
 
     def scroll_to_element(self, selector):
         self.browser.scroll_to_element(selector)
@@ -135,9 +145,8 @@ class RobotEyes(object):
             img = img.resize((1024, 700), Image.ANTIALIAS)
             img.save(arg)
 
-    def _fix_base_image_size(self, path, count):
+    def _fix_base_image_size(self, path, image_name):
         test_name = self.test_name.replace(' ', '_')
-        image_name = 'img' + str(count) + '.png'
         base_image = os.path.join(self.baseline_dir, test_name, image_name)
         if os.path.exists(base_image):
             im = Image.open(path)
@@ -187,6 +196,9 @@ class RobotEyes(object):
         baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
+
+    def _get_name(self):
+        return 'img%s' % str(self.count)
 
     def _close(self):
         thread = Thread(
