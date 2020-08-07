@@ -1,8 +1,7 @@
 import math
-import os
 import platform
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageOps
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.common.exceptions import JavascriptException
 from selenium.common.exceptions import NoSuchElementException
@@ -28,7 +27,7 @@ class SeleniumHooks(object):
     def is_mobile(self):
         return self.mobile
 
-    def capture_full_screen(self, path, blur=[], radius=50):
+    def capture_full_screen(self, path, blur=[], radius=50, redact=[]):
         self.driver.save_screenshot(path)
 
         if blur:
@@ -37,6 +36,17 @@ class SeleniumHooks(object):
                 initial_frame = self.driver.execute_script("return window.frameElement")
                 self.driver.switch_to.default_content()
                 self.blur_in_all_frames(blur, radius, path)
+                self.driver.switch_to.default_content()
+                print("Switching back to initial frame and name is %s" % initial_frame)
+                self.driver.switch_to.frame(initial_frame)
+
+        # User may want to blur certain elements and redact other elements at the same time.
+        if redact:
+            self._redact_regions(redact, path)
+            if not self.is_mobile():
+                initial_frame = self.driver.execute_script("return window.frameElement")
+                self.driver.switch_to.default_content()
+                self.redact_in_all_frames(redact, path)
                 self.driver.switch_to.default_content()
                 print("Switching back to initial frame and name is %s" % initial_frame)
                 self.driver.switch_to.frame(initial_frame)
@@ -52,7 +62,18 @@ class SeleniumHooks(object):
             self.blur_regions(blur, radius, path)
             self.driver.switch_to.default_content()
 
-    def capture_element(self, path, locator, blur=[], radius=50):
+    def redact_in_all_frames(self, redact, path):
+        frames = self.driver.find_elements_by_tag_name("frame")
+        iframes = self.driver.find_elements_by_tag_name("iframe")
+        joined_list = frames + iframes
+        print("Frames: %s" % str(len(joined_list)))
+        for index, frame in enumerate(joined_list):
+            print("Switching to Frame %s" % frame)
+            self.driver.switch_to.frame(frame)
+            self._redact_regions(redact, path)
+            self.driver.switch_to.default_content()
+
+    def capture_element(self, path, locator, blur=[], radius=50, redact=[]):
         self.driver.save_screenshot(path)
         prefix, locator, element = self.find_element(locator)
         coord = self._get_coordinates(prefix, locator, element)
@@ -63,12 +84,13 @@ class SeleniumHooks(object):
             math.ceil(coord['bottom'])
         )
         self.blur_regions(blur, radius, path) if blur else ''
+        self._redact_regions(redact, path) if redact else ''
         im = Image.open(path)
         im = im.crop((left, top, right, bottom))
         im.resize((1024, 700), Image.ANTIALIAS)
         im.save(path)
 
-    def capture_mobile_element(self, selector, path, blur=[], radius=50):
+    def capture_mobile_element(self, selector, path, blur=[], radius=50, redact=[]):
         prefix, locator, search_element = self.find_element(selector)
         location = search_element.location
         size = search_element.size
@@ -78,6 +100,7 @@ class SeleniumHooks(object):
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
         self.blur_regions(blur, radius, path) if blur else ''
+        self._redact_regions(redact, path) if redact else ''
         image = Image.open(path)
         image = image.crop((left, top, right, bottom))
         image.save(path)
@@ -111,6 +134,33 @@ class SeleniumHooks(object):
             cropped_image = im.crop((left, top, right, bottom))
             blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=int(radius)))
             im.paste(blurred_image, (left, top, right, bottom))
+            im.save(path)
+
+    def _redact_regions(self, selectors, path):
+        selectors = selectors if isinstance(selectors, list) else [selectors]
+        for region in selectors:
+            try:
+                prefix, locator, element = self.find_element(region)
+            except NoSuchElementException:
+                continue
+
+            area_coordinates = self._get_coordinates_from_driver(element)
+
+            if self.is_mobile():
+                left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
+                top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
+            else:
+                frame_abs_pos = self._get_current_frame_abs_position()
+                left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(
+                    area_coordinates['right'] + frame_abs_pos['x'])
+                top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(
+                    area_coordinates['bottom'] + frame_abs_pos['y'])
+
+            left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
+            im = Image.open(path)
+            cropped_image = im.crop((left, top, right, bottom))
+            readacted_image = ImageOps.colorize(cropped_image.convert('L'), black='black', white='black')
+            im.paste(readacted_image, (left, top, right, bottom))
             im.save(path)
 
     def _get_current_frame_abs_position(self):
