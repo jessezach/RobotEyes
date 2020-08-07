@@ -79,9 +79,47 @@ class RobotEyes(object):
         time.sleep(1)
         self.browser.capture_element(path, selector, blur, radius, redact)
         self.stats[name] = tolerance
+        self.count += 1
 
     def scroll_to_element(self, selector):
         self.browser.scroll_to_element(selector)
+
+    def compare_two_images(self, first, second, output, tolerance=None):
+        tolerance = float(tolerance) if tolerance else self.tolerance
+        if not first or not second:
+            raise Exception('Please provide first and second image paths')
+
+        first_path = os.path.join(self.path, first)
+        first_path += '.png' if not first_path.endswith('.png') else ''
+        second_path = os.path.join(self.path, second) + '.png'
+        second_path += '.png' if not second_path.endswith('.png') else ''
+        output += '.png' if not output.endswith('.png') else ''
+        test_name = self.test_name.replace(' ', '_')
+        diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
+
+        if os.path.exists(first_path) and os.path.exists(second_path):
+            if not os.path.exists(diff_path):
+                os.makedirs(diff_path)
+
+            diff_path = os.path.join(diff_path, output)
+            difference = Imagemagick(first_path, second_path, diff_path).compare_images()
+            color, result = self._get_result(difference, tolerance)
+            text = '%s %s' % (result, color)
+            outfile = open(self.path + os.sep + output + '.txt', 'w')
+            outfile.write(text)
+            outfile.close()
+            base_path = os.path.join(self.baseline_dir, test_name, output)
+            actual_path = os.path.join(self.path, output)
+            shutil.copy(first_path, base_path)
+            shutil.copy(second_path, actual_path)
+
+            try:
+                os.remove(first_path)
+                os.remove(second_path)
+            except IOError:
+                pass
+        else:
+            raise Exception('Image %s or %s doesnt exist' % (first, second))
 
     def compare_images(self):
         test_name = self.test_name.replace(' ', '_')
@@ -113,7 +151,7 @@ class RobotEyes(object):
                     shutil.copy(a_path, b_path)
                     text = '%s %s' % ('None', 'green')
 
-                output = open(actual_path + '/' + filename + '.txt', 'w')
+                output = open(actual_path + os.sep + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
