@@ -104,6 +104,7 @@ class RobotEyes(object):
             diff_path = os.path.join(diff_path, output)
             difference = Imagemagick(first_path, second_path, diff_path).compare_images()
             color, result = self._get_result(difference, tolerance)
+            self.stats[output] = tolerance
             text = '%s %s' % (result, color)
             outfile = open(self.path + os.sep + output + '.txt', 'w')
             outfile.write(text)
@@ -226,13 +227,9 @@ class RobotEyes(object):
         return color, result
 
     def _get_baseline_dir(self):
-        try:
-            baseline_dir = BuiltIn().get_variable_value('${images_dir}')
-        except:
-            raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
-
+        baseline_dir = BuiltIn().get_variable_value('${images_dir}')
         if not baseline_dir:
-            raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
+            BuiltIn().run_keyword('Fail', 'Please provide image baseline directory. Ex: -v images_dir:base')
 
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
@@ -242,8 +239,10 @@ class RobotEyes(object):
 
     def _close(self):
         images_base_folder = self.images_base_folder.replace(os.getcwd(), '')[1:]
-        thread = Thread(
-            target=generate_report,
-            args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), images_base_folder, )
-        )
-        thread.start()
+
+        if self.baseline_dir and images_base_folder:
+            thread = Thread(
+                target=generate_report,
+                args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), images_base_folder, )
+            )
+            thread.start()

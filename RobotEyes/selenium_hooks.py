@@ -117,19 +117,7 @@ class SeleniumHooks(object):
             except NoSuchElementException:
                 continue
 
-            area_coordinates = self._get_coordinates_from_driver(element)
-
-            if self.is_mobile():
-                left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
-                top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
-            else:
-                frame_abs_pos = self._get_current_frame_abs_position()
-                left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(
-                    area_coordinates['right'] + frame_abs_pos['x'])
-                top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(
-                    area_coordinates['bottom'] + frame_abs_pos['y'])
-
-            left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
+            left, right, top, bottom = self._get_coordinates_from_element(element)
             im = Image.open(path)
             cropped_image = im.crop((left, top, right, bottom))
             blurred_image = cropped_image.filter(ImageFilter.GaussianBlur(radius=int(radius)))
@@ -144,24 +132,27 @@ class SeleniumHooks(object):
             except NoSuchElementException:
                 continue
 
-            area_coordinates = self._get_coordinates_from_driver(element)
-
-            if self.is_mobile():
-                left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
-                top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
-            else:
-                frame_abs_pos = self._get_current_frame_abs_position()
-                left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(
-                    area_coordinates['right'] + frame_abs_pos['x'])
-                top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(
-                    area_coordinates['bottom'] + frame_abs_pos['y'])
-
-            left, right, top, bottom = self._update_coordinates(left, right, top, bottom)
+            left, right, top, bottom = self._get_coordinates_from_element(element)
             im = Image.open(path)
             cropped_image = im.crop((left, top, right, bottom))
             readacted_image = ImageOps.colorize(cropped_image.convert('L'), black='black', white='black')
             im.paste(readacted_image, (left, top, right, bottom))
             im.save(path)
+
+    def _get_coordinates_from_element(self, element):
+        area_coordinates = self._get_coordinates_from_driver(element)
+
+        if self.is_mobile():
+            left, right = math.ceil(area_coordinates['left']), math.ceil(area_coordinates['right'])
+            top, bottom = math.ceil(area_coordinates['top']), math.ceil(area_coordinates['bottom'])
+        else:
+            frame_abs_pos = self._get_current_frame_abs_position()
+            left, right = math.ceil(area_coordinates['left'] + frame_abs_pos['x']), math.ceil(
+                area_coordinates['right'] + frame_abs_pos['x'])
+            top, bottom = math.ceil(area_coordinates['top'] + frame_abs_pos['y']), math.ceil(
+                area_coordinates['bottom'] + frame_abs_pos['y'])
+
+        return self._update_coordinates(left, right, top, bottom)
 
     def _get_current_frame_abs_position(self):
         cmd = 'function currentFrameAbsolutePosition() { \
