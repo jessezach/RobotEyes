@@ -244,7 +244,7 @@ class SeleniumHooks(object):
                 coordinates = self.driver.execute_script(cmd)
             except JavascriptException:
                 coordinates = self._get_coordinates_from_driver(element)
-            
+
         return coordinates
 
     def _get_coordinates_from_driver(self, element):

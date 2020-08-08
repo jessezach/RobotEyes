@@ -34,7 +34,7 @@ def report_gen():
     if opts.baseline is None:
         raise Exception('Please provide path to baseline image directory.')
 
-    if os.path.exists(root_folder + "/" + report_path) and os.path.exists(root_folder + "/" + img_path):
+    if os.path.exists(root_folder + os.path.sep + report_path) and os.path.exists(root_folder + os.path.sep + img_path):
         generate_report(opts.baseline, report_path, img_path)
     else:
         raise Exception("Please provide a valid path to results.")

@@ -204,7 +204,8 @@ def baseline_images():
 
     for img in imges:
         actual_path = os.path.join(results, img)
-        baseline_path = actual_path.replace('/actual/', '/baseline/')
+        baseline_path = actual_path.replace(
+            os.path.sep + 'actual' + os.path.sep, os.path.sep + 'baseline' + os.path.sep)
 
         if os.path.exists(actual_path):
             if os.path.exists(baseline_path):

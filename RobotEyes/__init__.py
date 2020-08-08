@@ -59,6 +59,7 @@ class RobotEyes(object):
         self.stats[name] = tolerance
         self.count += 1
 
+
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50, name=None, redact=[]):
         tolerance = float(tolerance) if tolerance else self.tolerance
@@ -152,7 +153,7 @@ class RobotEyes(object):
                     shutil.copy(a_path, b_path)
                     text = '%s %s' % ('None', 'green')
 
-                output = open(actual_path + os.sep + filename + '.txt', 'w')
+                output = open(actual_path + os.path.sep + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
@@ -208,7 +209,7 @@ class RobotEyes(object):
         output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
 
         if 'pabot_results' in output_dir:
-            index = output_dir.find('/pabot_results')
+            index = output_dir.find(os.path.sep + 'pabot_results')
             return output_dir[:index]
         return output_dir
 
