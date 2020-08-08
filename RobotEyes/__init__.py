@@ -41,37 +41,87 @@ class RobotEyes(object):
         self._delete_folder_if_exists(test_name_folder)
         # recreate deleted folder
         self._create_empty_folder(test_name_folder)
+        self.count = 1
 
     # Captures full screen
-    def capture_full_screen(self, tolerance=None, blur=[], radius=50):
+    def capture_full_screen(self, tolerance=None, blur=[], radius=50, name=None, redact=[]):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
-        count = self.browser.capture_full_screen(self.path, blur, radius)
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
+        self.browser.capture_full_screen(path, blur, radius, redact)
         if self.browser.is_mobile():
-            self._fix_base_image_size(self.path + '/img' + str(count) + '.png', count)
+            self._fix_base_image_size(path, name)
         else:
-            self._resize(self.path + '/img' + str(count) + '.png')
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+            self._resize(path)
+
+        self.stats[name] = tolerance
+        self.count += 1
+
 
     # Captures a specific region in a mobile screen
-    def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50):
+    def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50, name=None, redact=[]):
         tolerance = float(tolerance) if tolerance else self.tolerance
-        count = self.browser.capture_mobile_element(selector, self.path, blur, radius)
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
+        self.browser.capture_mobile_element(selector, path, blur, radius, redact)
+        self.stats[name] = tolerance
+        self.count += 1
 
     # Captures a specific region in a webpage
-    def capture_element(self, selector, tolerance=None, blur=[], radius=50):
+    def capture_element(self, selector, tolerance=None, blur=[], radius=50, name=None, redact=[]):
         tolerance = float(tolerance) if tolerance else self.tolerance
         tolerance = tolerance/100 if tolerance >= 1 else tolerance
+        name = self._get_name() if name is None else name
+        name += '.png'
+        path = os.path.join(self.path, name)
         time.sleep(1)
-        count = self.browser.capture_element(self.path, selector, blur, radius)
-        key = 'img' + str(count) + '.png'
-        self.stats[key] = tolerance
+        self.browser.capture_element(path, selector, blur, radius, redact)
+        self.stats[name] = tolerance
+        self.count += 1
 
     def scroll_to_element(self, selector):
         self.browser.scroll_to_element(selector)
+
+    def compare_two_images(self, first, second, output, tolerance=None):
+        tolerance = float(tolerance) if tolerance else self.tolerance
+        if not first or not second:
+            raise Exception('Please provide first and second image paths')
+
+        first_path = os.path.join(self.path, first)
+        first_path += '.png' if not first_path.endswith('.png') else ''
+        second_path = os.path.join(self.path, second) + '.png'
+        second_path += '.png' if not second_path.endswith('.png') else ''
+        output += '.png' if not output.endswith('.png') else ''
+        test_name = self.test_name.replace(' ', '_')
+        diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
+
+        if os.path.exists(first_path) and os.path.exists(second_path):
+            if not os.path.exists(diff_path):
+                os.makedirs(diff_path)
+
+            diff_path = os.path.join(diff_path, output)
+            difference = Imagemagick(first_path, second_path, diff_path).compare_images()
+            color, result = self._get_result(difference, tolerance)
+            self.stats[output] = tolerance
+            text = '%s %s' % (result, color)
+            outfile = open(self.path + os.sep + output + '.txt', 'w')
+            outfile.write(text)
+            outfile.close()
+            base_path = os.path.join(self.baseline_dir, test_name, output)
+            actual_path = os.path.join(self.path, output)
+            shutil.copy(first_path, base_path)
+            shutil.copy(second_path, actual_path)
+
+            try:
+                os.remove(first_path)
+                os.remove(second_path)
+            except IOError:
+                pass
+        else:
+            raise Exception('Image %s or %s doesnt exist' % (first, second))
 
     def compare_images(self):
         test_name = self.test_name.replace(' ', '_')
@@ -103,7 +153,7 @@ class RobotEyes(object):
                     shutil.copy(a_path, b_path)
                     text = '%s %s' % ('None', 'green')
 
-                output = open(actual_path + '/' + filename + '.txt', 'w')
+                output = open(actual_path + os.path.sep + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
@@ -135,9 +185,8 @@ class RobotEyes(object):
             img = img.resize((1024, 700), Image.ANTIALIAS)
             img.save(arg)
 
-    def _fix_base_image_size(self, path, count):
+    def _fix_base_image_size(self, path, image_name):
         test_name = self.test_name.replace(' ', '_')
-        image_name = 'img' + str(count) + '.png'
         base_image = os.path.join(self.baseline_dir, test_name, image_name)
         if os.path.exists(base_image):
             im = Image.open(path)
@@ -160,7 +209,7 @@ class RobotEyes(object):
         output_dir = BuiltIn().replace_variables('${OUTPUT DIR}')
 
         if 'pabot_results' in output_dir:
-            index = output_dir.find('/pabot_results')
+            index = output_dir.find(os.path.sep + 'pabot_results')
             return output_dir[:index]
         return output_dir
 
@@ -179,18 +228,22 @@ class RobotEyes(object):
         return color, result
 
     def _get_baseline_dir(self):
-        try:
-            baseline_dir = BuiltIn().get_variable_value('${images_dir}')
-        except:
-            raise Exception('Please provide image baseline directory. Ex: -v images_dir:base')
+        baseline_dir = BuiltIn().get_variable_value('${images_dir}')
+        if not baseline_dir:
+            BuiltIn().run_keyword('Fail', 'Please provide image baseline directory. Ex: -v images_dir:base')
 
-        baseline_dir = os.path.join(os.getcwd(), baseline_dir)
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
 
+    def _get_name(self):
+        return 'img%s' % str(self.count)
+
     def _close(self):
-        thread = Thread(
-            target=generate_report,
-            args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), self.images_base_folder, )
-        )
-        thread.start()
+        images_base_folder = self.images_base_folder.replace(os.getcwd(), '')[1:]
+
+        if self.baseline_dir and images_base_folder:
+            thread = Thread(
+                target=generate_report,
+                args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), images_base_folder, )
+            )
+            thread.start()
