@@ -36,11 +36,12 @@ It also serves as documentation to clarify how this library functions on a high 
 | Keyword                | Arguments                        | Comments                                                                                    |
 |------------------------|----------------------------------|---------------------------------------------------------------------------------------------|
 | Open Eyes              | lib, tolerance                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5`                                                |
-| Capture Full Screen    | tolerance, blur, radius          | Ex `capture full screen  tolerance=5  blur=<array of locators>` radius=50(thickness of blur) |
-| Capture Element        | locator, tolerance, blur, radius |                                                                                             |
-| Capture Mobile Element | locator, tolerance, blur, radius |                                                                                             |
+| Capture Full Screen    | tolerance, blur, radius, name, redact          | Ex `capture full screen  tolerance=5  name=homepage  blur=<array of locators>` radius=50(thickness of blur) |
+| Capture Element        | locator, tolerance, blur, radius, name, redact |                                                                                             |
+| Capture Mobile Element | locator, tolerance, blur, radius, name, redact |                                                                                             |
 | Scroll To Element      | locator                          | Ex `scroll to element  id=user`                                                             |
 | Compare Images         |                                  | Compares all the images captured in the test with their respective base image               |
+| Compare Two Images     | first, second, output, tolerance | Compares two images captured in the above steps. Takes image names, diff file name and tolerance as arguments Ex: Compare Two Images  img1  img2  diff  10|
 
 ### Running Tests ###
 `robot -d results -v images_dir:<baseline_images_directory> tests`<br/>
@@ -190,6 +191,14 @@ Ex: ```Capture Element  <locator>  blur=id=test```
     @{blur}    id=body    css=#SIvCob
     Capture Element   <locator>  blur=${blur}
     Capture Full Screen     blur=${blur}
+```
+## Redacting elements from image
+If blurring elements does not serve your purpose, you can redact elements from images. Simply pass a list of locators that you want to redact as argument to the capture keywords.
+Ex: ```Capture Element  <locator>  redact=id=test```
+```
+    @{redact}    id=body    css=#SIvCob
+    Capture Element   <locator>  redact=${redact}
+    Capture Full Screen     redact=${redact}
 ```
 
 ## Basic Report
