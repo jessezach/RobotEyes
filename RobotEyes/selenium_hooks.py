@@ -4,7 +4,7 @@ import platform
 from PIL import Image, ImageFilter, ImageOps
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.common.exceptions import JavascriptException
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException
 
 
 class SeleniumHooks(object):
@@ -58,7 +58,10 @@ class SeleniumHooks(object):
         print("Frames: %s" % str(len(joined_list)))
         for index, frame in enumerate(joined_list):
             print("Switching to Frame %s" % frame)
-            self.driver.switch_to.frame(frame)
+            try:
+                self.driver.switch_to.frame(frame)
+            except NoSuchFrameException:
+                continue
             self.blur_regions(blur, radius, path)
             self.driver.switch_to.default_content()
 
@@ -69,7 +72,10 @@ class SeleniumHooks(object):
         print("Frames: %s" % str(len(joined_list)))
         for index, frame in enumerate(joined_list):
             print("Switching to Frame %s" % frame)
-            self.driver.switch_to.frame(frame)
+            try:
+                self.driver.switch_to.frame(frame)
+            except NoSuchFrameException:
+                continue
             self._redact_regions(redact, path)
             self.driver.switch_to.default_content()
 
