@@ -114,12 +114,6 @@ class RobotEyes(object):
             actual_path = os.path.join(self.path, output)
             shutil.copy(first_path, base_path)
             shutil.copy(second_path, actual_path)
-
-            try:
-                os.remove(first_path)
-                os.remove(second_path)
-            except IOError:
-                pass
         else:
             raise Exception('Image %s or %s doesnt exist' % (first, second))
 
