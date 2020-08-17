@@ -35,6 +35,8 @@ def generate_report(baseline_folder, report_path, img_path):
 
     tree = ET.parse(report_path)
     for t in tree.findall('.//test'):
+        if not t.findall('.//kw[@name="Open Eyes"]'):
+            continue
         test_name = t.get('name')
         folder_name = test_name.replace(' ', '_')
 
