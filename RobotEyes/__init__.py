@@ -233,11 +233,11 @@ class RobotEyes(object):
         return 'img%s' % str(self.count)
 
     def _close(self):
-        images_base_folder = self.images_base_folder.replace(os.getcwd(), '')[1:]
+        results_folder = self.output_dir.replace(os.getcwd(), '')[1:]
 
-        if self.baseline_dir and images_base_folder:
+        if self.baseline_dir and results_folder:
             thread = Thread(
                 target=generate_report,
-                args=(self.baseline_dir, os.path.join(self.output_dir, 'output.xml'), images_base_folder, )
+                args=(self.baseline_dir, results_folder, )
             )
             thread.start()
