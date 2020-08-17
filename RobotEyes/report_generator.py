@@ -3,8 +3,11 @@ import xml.etree.ElementTree as ET
 from time import sleep
 
 
-def generate_report(baseline_folder, report_path, img_path):
+def generate_report(baseline_folder, results_folder):
     sleep(1)
+    img_path = os.path.join(results_folder, 'visual_images')
+    report_path = os.path.join(results_folder, 'output.xml')
+    relative_baseline_folder_path = relative_baseline_folder(baseline_folder, results_folder)
     html = '''
     <html>
     <head>
@@ -63,28 +66,28 @@ def generate_report(baseline_folder, report_path, img_path):
             if filename.endswith('.png'):
                 html += '''<tr>'''
                 if os.path.exists(os.path.join(baseline_folder, folder_name, filename)):
-                    base_img_path = os.path.join(baseline_folder, folder_name, filename)
+                    base_img_path = os.path.join(relative_baseline_folder_path, folder_name, filename)
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
                             % (base_img_path, base_img_path)
                 else:
                     html += '''<td></td>'''
 
                 if os.path.exists(os.path.join(img_path, 'actual', folder_name, filename)):
-                    baseline_img_path = os.path.join(img_path, 'actual', folder_name, filename)
+                    actual_img_path = os.path.join('visual_images', 'actual', folder_name, filename)
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
-                            % (baseline_img_path, baseline_img_path)
+                            % (actual_img_path, actual_img_path)
 
                 else:
                     html += '''<td></td>'''
 
                 arr = filename.split('.')
                 if os.path.exists(os.path.join(img_path, 'diff', folder_name, filename)):
-                    diff_img_path = os.path.join(img_path, 'diff', folder_name, filename)
+                    diff_img_path = os.path.join('visual_images', 'diff', folder_name, filename)
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
                             % (diff_img_path, diff_img_path)
 
                 elif os.path.exists(img_path + os.path.sep + 'diff' + os.path.sep + folder_name + os.path.sep + arr[0] + '-0.png'):
-                    diff_img_path = img_path + os.path.sep +'diff' + os.path.sep + \
+                    diff_img_path = 'visual_images' + os.path.sep +'diff' + os.path.sep + \
                         folder_name + os.path.sep + arr[0] + '-0.png'
                     html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
                             % (diff_img_path, diff_img_path)
@@ -204,7 +207,37 @@ def generate_report(baseline_folder, report_path, img_path):
     </body>
     </html>'''
 
-    print("Creating visual report at %s/visualReport.html" % os.getcwd())
-    output = open(os.getcwd() + os.path.sep + 'visualReport.html', 'w')
+    output_path = os.path.join(os.getcwd(), results_folder, 'visualReport.html')
+    print("Creating visual report at %s" % output_path)
+    output = open(output_path, 'w')
     output.write(html)
     output.close()
+
+
+def relative_baseline_folder(baseline_folder, results_folder):
+    if baseline_folder.startswith(os.path.sep):
+        baseline_folder = baseline_folder[1:]
+
+    # This condition to avoid fixing absolute paths
+    if os.path.exists(os.getcwd() + os.path.sep + baseline_folder):
+        assert os.path.exists(results_folder)
+        count = get_count_of_directories(results_folder)
+        s = ''
+        for i in range(count):
+            s = s + ('..' + os.path.sep)
+        s += baseline_folder
+        return s
+    else:
+        # Does not exist within project root or absolute path
+        return os.path.sep + baseline_folder
+
+
+def get_count_of_directories(results_path):
+    count = 0
+    if not results_path.startswith(os.path.sep):
+        results_path = os.path.sep + results_path
+
+    for i in range(len(results_path)):
+        if results_path[i] != os.path.sep and results_path[i-1] == os.path.sep:
+            count += 1
+    return count
