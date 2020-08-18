@@ -40,80 +40,21 @@ def generate_report(baseline_folder, results_folder):
     for t in tree.findall('.//test'):
         if not t.findall('.//kw[@name="Open Eyes"]'):
             continue
+
         test_name = t.get('name')
         folder_name = test_name.replace(' ', '_')
 
-        html += '''<tr data-toggle="collapse" data-target='div[value="%s"]' class="accordion-toggle">
-        <td>
-        <button class="btn btn-default btn-sm"><i class="fas fa-arrow-right"></i></button>
-        </td>
-        <td>%s</td>
-        </tr>
-        <tr>
-        <td colspan="12" class="hiddenRow"><div class="accordian-body collapse" value="%s">
-        <table class="table table-bordered table-hover" id="innerResults">
-        <thead>
-        <tr>
-        <th style="text-align:center;vertical-align:middle">Baseline</th>
-        <th style="text-align:center;vertical-align:middle">Actual</th>
-        <th style="text-align:center;vertical-align:middle">Diff</th>
-        <th>Diff value<br><font size="2">(Exp : Actual)</font></th>
-        </tr>
-        </thead>
-        <tbody>''' % (folder_name, test_name, folder_name)
-
-        for filename in os.listdir(baseline_folder + os.path.sep + folder_name):
-            if filename.endswith('.png'):
-                html += '''<tr>'''
-                if os.path.exists(os.path.join(baseline_folder, folder_name, filename)):
-                    base_img_path = os.path.join(relative_baseline_folder_path, folder_name, filename)
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
-                            % (base_img_path, base_img_path)
-                else:
-                    html += '''<td></td>'''
-
-                if os.path.exists(os.path.join(img_path, 'actual', folder_name, filename)):
-                    actual_img_path = os.path.join('visual_images', 'actual', folder_name, filename)
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
-                            % (actual_img_path, actual_img_path)
-
-                else:
-                    html += '''<td></td>'''
-
-                arr = filename.split('.')
-                if os.path.exists(os.path.join(img_path, 'diff', folder_name, filename)):
-                    diff_img_path = os.path.join('visual_images', 'diff', folder_name, filename)
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
-                            % (diff_img_path, diff_img_path)
-
-                elif os.path.exists(img_path + os.path.sep + 'diff' + os.path.sep + folder_name + os.path.sep + arr[0] + '-0.png'):
-                    diff_img_path = 'visual_images' + os.path.sep +'diff' + os.path.sep + \
-                        folder_name + os.path.sep + arr[0] + '-0.png'
-                    html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>'''\
-                            % (diff_img_path, diff_img_path)
-
-                else:
-                    html += '''<td></td>'''
-
-                txt_file = img_path + os.path.sep + 'actual' + os.path.sep + \
-                    folder_name + os.path.sep + filename + ".txt"
-                if os.path.exists(txt_file):
-                    infile = open(img_path + os.path.sep + 'actual' + os.path.sep + folder_name +
-                                  os.path.sep + filename + ".txt", 'r')
-                    first_line = infile.readline().strip()
-                    arr = first_line.split()
-                    infile.close()
-                    html += '''
-                    <td style="color:%s;">%s</td></tr>''' % (arr[1].lower(), arr[0])
-                else:
-                    html += '''<td></td></tr>'''
-
-        html += '''
-        </tbody>
-        </table>
-        </div>
-        </td>
-        </tr>'''
+        # If the test folder does not exist, we know that it's probably a data driven test. Unless there was some other exception.
+        if not os.path.exists(os.path.join(img_path, 'actual', folder_name)):
+            for open_eyes_keyword in t.findall('.//kw[@name="Open Eyes"]'):
+                # Get the actual test folder name from the message we log within open eyes keyword
+                msg = open_eyes_keyword.findall('.//msg')[0].text
+                if msg:
+                    folder_name = msg
+                    html = make_test_table(html, baseline_folder, relative_baseline_folder_path, img_path, test_name,
+                                    folder_name)
+        else:
+            html = make_test_table(html, baseline_folder, relative_baseline_folder_path, img_path, test_name, folder_name)
 
     html += '''
     </tbody>
@@ -217,7 +158,6 @@ def generate_report(baseline_folder, results_folder):
 def relative_baseline_folder(baseline_folder, results_folder):
     if baseline_folder.startswith(os.path.sep):
         baseline_folder = baseline_folder[1:]
-
     # This condition to avoid fixing absolute paths
     if os.path.exists(os.getcwd() + os.path.sep + baseline_folder):
         assert os.path.exists(results_folder)
@@ -241,3 +181,75 @@ def get_count_of_directories(results_path):
         if results_path[i] != os.path.sep and results_path[i-1] == os.path.sep:
             count += 1
     return count
+
+
+def make_test_table(html, baseline_folder, relative_baseline_folder_path, img_path, test_name, folder_name):
+    html += '''<tr data-toggle="collapse" data-target='div[value="%s"]' class="accordion-toggle">
+            <td>
+            <button class="btn btn-default btn-sm"><i class="fas fa-arrow-right"></i></button>
+            </td>
+            <td>%s</td>
+            </tr>
+            <tr>
+            <td colspan="12" class="hiddenRow"><div class="accordian-body collapse" value="%s">
+            <table class="table table-bordered table-hover" id="innerResults">
+            <thead>
+            <tr>
+            <th style="text-align:center;vertical-align:middle">Baseline</th>
+            <th style="text-align:center;vertical-align:middle">Actual</th>
+            <th style="text-align:center;vertical-align:middle">Diff</th>
+            <th>Diff value<br><font size="2">(Exp : Actual)</font></th>
+            </tr>
+            </thead>
+            <tbody>''' % (folder_name, test_name, folder_name)
+
+    for filename in os.listdir(baseline_folder + os.path.sep + folder_name):
+        if filename.endswith('.png'):
+            html += '''<tr>'''
+            if os.path.exists(os.path.join(baseline_folder, folder_name, filename)):
+                base_img_path = os.path.join(relative_baseline_folder_path, folder_name, filename)
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                        % (base_img_path, base_img_path)
+            else:
+                html += '''<td></td>'''
+
+            if os.path.exists(os.path.join(img_path, 'actual', folder_name, filename)):
+                actual_img_path = os.path.join('visual_images', 'actual', folder_name, filename)
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                        % (actual_img_path, actual_img_path)
+            else:
+                html += '''<td></td>'''
+
+            arr = filename.split('.')
+            if os.path.exists(os.path.join(img_path, 'diff', folder_name, filename)):
+                diff_img_path = os.path.join('visual_images', 'diff', folder_name, filename)
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                        % (diff_img_path, diff_img_path)
+            elif os.path.exists(
+                    img_path + os.path.sep + 'diff' + os.path.sep + folder_name + os.path.sep + arr[0] + '-0.png'):
+                diff_img_path = 'visual_images' + os.path.sep + 'diff' + os.path.sep + \
+                                folder_name + os.path.sep + arr[0] + '-0.png'
+                html += '''<td><a href="%s" target="_blank"><img src="%s" height="200" width="350"></a></td>''' \
+                        % (diff_img_path, diff_img_path)
+            else:
+                html += '''<td></td>'''
+            txt_file = img_path + os.path.sep + 'actual' + os.path.sep + \
+                       folder_name + os.path.sep + filename + ".txt"
+            if os.path.exists(txt_file):
+                infile = open(img_path + os.path.sep + 'actual' + os.path.sep + folder_name +
+                              os.path.sep + filename + ".txt", 'r')
+                first_line = infile.readline().strip()
+                arr = first_line.split()
+                infile.close()
+                html += '''
+                        <td style="color:%s;">%s</td></tr>''' % (arr[1].lower(), arr[0])
+            else:
+                html += '''<td></td></tr>'''
+
+    html += '''
+            </tbody>
+            </table>
+            </div>
+            </td>
+            </tr>'''
+    return html
