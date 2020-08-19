@@ -26,7 +26,7 @@ class RobotEyes(object):
     def __init__(self, tolerance=0):
         self.ROBOT_LIBRARY_LISTENER = self
 
-    def open_eyes(self, lib='SeleniumLibrary', tolerance=0):
+    def open_eyes(self, lib='SeleniumLibrary', tolerance=0, template_id=''):
         self.tolerance = float(tolerance)
         self.tolerance = self.tolerance / 100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
@@ -36,7 +36,10 @@ class RobotEyes(object):
         self.images_base_folder = os.path.join(self.output_dir, IMAGES_FOLDER)
         self.browser = SeleniumHooks(lib)
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
+        if template_id:
+            self.test_name += '_%s' % template_id
         test_name_folder = self.test_name.replace(' ', '_')
+        print(test_name_folder)
         # delete if directory already exist. Fresh test
         self._delete_folder_if_exists(test_name_folder)
         # recreate deleted folder
