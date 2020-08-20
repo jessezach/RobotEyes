@@ -6,4 +6,6 @@ MODE_TEST = 'test'
 MODE_BASELINE = 'baseline'
 REPORT_FILE = 'visualReport.html'
 REPORT_EXPIRATION_THRESHOLD = 10
-
+IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'bmp', 'raw', 'pdf']
+ROBOT_LIBRARY_SCOPE = 'GLOBAL'
+ROBOT_LISTENER_API_VERSION = 3

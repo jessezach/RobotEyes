@@ -19,8 +19,9 @@ class RobotEyes(object):
     test_name = ''
     baseline_dir = ''
     browser = None
-    ROBOT_LISTENER_API_VERSION = 2
-    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
+    ROBOT_LISTENER_API_VERSION = ROBOT_LISTENER_API_VERSION
+    ROBOT_LIBRARY_SCOPE = ROBOT_LIBRARY_SCOPE
+
 
     # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
     def __init__(self, tolerance=0):
@@ -32,9 +33,12 @@ class RobotEyes(object):
         self.stats = {}
         self.fail = False
         self.baseline_dir = self._get_baseline_dir()
+        self.actual_dir = self._get_actual_dir()
         self.output_dir = self._output_dir()
+        self.lib = lib
         self.images_base_folder = os.path.join(self.output_dir, IMAGES_FOLDER)
-        self.browser = SeleniumHooks(lib)
+        if lib.lower() != 'none':
+            self.browser = SeleniumHooks(lib)
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         if template_id:
             self.test_name += '_%s' % template_id
@@ -88,37 +92,32 @@ class RobotEyes(object):
     def scroll_to_element(self, selector):
         self.browser.scroll_to_element(selector)
 
-    def compare_two_images(self, first, second, output, tolerance=None):
+    def compare_two_images(self, ref, actual, output, tolerance=None):
+        ref += '.png' if ref.split('.')[-1] not in IMAGE_EXTENSIONS else ''
+        actual += '.png' if actual.split('.')[-1] not in IMAGE_EXTENSIONS else ''
+        output += '.png' if output.split('.')[-1] not in IMAGE_EXTENSIONS else ''
         tolerance = float(tolerance) if tolerance else self.tolerance
-        if not first or not second:
-            raise Exception('Please provide first and second image paths')
 
-        first_path = os.path.join(self.path, first)
-        first_path += '.png' if not first_path.endswith('.png') else ''
-        second_path = os.path.join(self.path, second) + '.png'
-        second_path += '.png' if not second_path.endswith('.png') else ''
-        output += '.png' if not output.endswith('.png') else ''
-        test_name = self.test_name.replace(' ', '_')
-        diff_path = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name)
+        if not ref or not actual:
+            raise Exception('Please provide reference and actual image names')
+
+        first_path = os.path.join(self.baseline_dir, ref)
+        second_path = os.path.join(self.actual_dir, actual)
 
         if os.path.exists(first_path) and os.path.exists(second_path):
-            if not os.path.exists(diff_path):
-                os.makedirs(diff_path)
-
-            diff_path = os.path.join(diff_path, output)
+            diff_path = os.path.join(self.path, output)
             difference = Imagemagick(first_path, second_path, diff_path).compare_images()
             color, result = self._get_result(difference, tolerance)
             self.stats[output] = tolerance
             text = '%s %s' % (result, color)
             outfile = open(self.path + os.sep + output + '.txt', 'w')
             outfile.write(text)
+            outfile.write("\n")
+            img_names = '%s %s' % (ref, actual)
+            outfile.write(img_names)
             outfile.close()
-            base_path = os.path.join(self.baseline_dir, test_name, output)
-            actual_path = os.path.join(self.path, output)
-            shutil.copy(first_path, base_path)
-            shutil.copy(second_path, actual_path)
         else:
-            raise Exception('Image %s or %s doesnt exist' % (first, second))
+            raise Exception('Image %s or %s doesnt exist' % (ref, actual))
 
     def compare_images(self):
         test_name = self.test_name.replace(' ', '_')
@@ -166,10 +165,11 @@ class RobotEyes(object):
             shutil.rmtree(diff_image_test_folder)
 
     def _create_empty_folder(self, test_name_folder):
-        self.path = os.path.join(self.baseline_dir, test_name_folder)
+        if self.lib.lower() != 'none':
+            self.path = os.path.join(self.baseline_dir, test_name_folder)
 
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+            if not os.path.exists(self.path):
+                os.makedirs(self.path)
 
         self.path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
 
@@ -232,8 +232,17 @@ class RobotEyes(object):
         os.makedirs(baseline_dir) if not os.path.exists(baseline_dir) else ''
         return baseline_dir
 
+    def _get_actual_dir(self):
+        return BuiltIn().get_variable_value('${actual_dir}')
+
     def _get_name(self):
         return 'img%s' % str(self.count)
+
+    def _end_test(self, data, test):
+        if self.lib.lower() == 'none':
+            if self.fail:
+                test.status = 'FAIL'
+                test.message = 'Image dissimilarity exceeds tolerance'
 
     def _close(self):
         results_folder = self.output_dir.replace(os.getcwd(), '')[1:]
@@ -241,6 +250,6 @@ class RobotEyes(object):
         if self.baseline_dir and results_folder:
             thread = Thread(
                 target=generate_report,
-                args=(self.baseline_dir, results_folder, )
+                args=(self.baseline_dir, results_folder, self.actual_dir,)
             )
             thread.start()
