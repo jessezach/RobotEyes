@@ -176,6 +176,51 @@ Sample visual regression test case  # Name of the example test case
     Compare Images
     Close Browser
 ```
+
+### Non web/mobile image comparison tests
+You can run plain non web/mobile image comparison tests as well. Here is an example:
+```robotframework
+*** Settings ***
+Library    RobotEyes
+
+
+*** Test Cases ***    
+Plain image comparison test case  # Name of the example test case
+    Open Eyes    lib=none  5
+    Compare Two Images   ref=oldsearchpage.png   actual=newsearchpage.png   output=diffimage.png  tolerance=5
+```
+You need to place images to compare within two folders and provide their path while running the tests.<br/>
+`robot -d results -v images_dir:<reference_directory> -v actual_dir:<actual_directory>  Tests/nonwebtest.robot`
+
+**Important** Do not run non web tests and web/mobile tests together. This will result in errors during report creation.
+
+### Template Tests
+When writing a data driven Template Test, you need to provide a unique template_id in order to uniquely save images for each test.
+```robotframework
+*** Settings ***
+Library  SeleniumLibrary
+Library  RobotEyes
+
+*** Test Cases ***
+Sample test
+    [Template]   Sample keyword
+    https://www.google.com/   0
+    https://www.google.com/   1
+    https://www.google.com/   2
+
+
+*** Keywords ***
+Sample keyword
+    [Arguments]  ${url}  ${uid}
+    open browser  ${url}  chrome
+    open eyes  SeleniumLibrary   template_id=${uid}
+    sleep  3
+    capture element  id=hplogo
+    capture element  id=body  50
+    compare images
+    close browser
+```
+
 ## Tolerance
 Tolerance is the allowed dissimilarity between images. If comparison difference is more than tolerance, the test fails.<br/>
 You can pass tolerance globally to the `open eyes` keyword. Ex `Open Eyes  lib=SeleniumLibrary  tolerance=5`.<br/>
