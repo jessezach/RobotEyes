@@ -15,6 +15,13 @@ def parse_options():
     )
 
     parser.add_option(
+        '--actual',
+        dest='actual',
+        default=None,
+        help="relative path to where actual images directory exists. For non web/mobile tests"
+    )
+
+    parser.add_option(
         '--results',
         dest='results',
         default=os.getcwd(),
@@ -35,6 +42,6 @@ def report_gen():
         raise Exception('Please provide path to baseline image directory.')
 
     if os.path.exists(root_folder + os.path.sep + report_path) and os.path.exists(root_folder + os.path.sep + img_path):
-        generate_report(opts.baseline, report_path, img_path)
+        generate_report(opts.baseline, opts.results, opts.actual)
     else:
         raise Exception("Please provide a valid path to results.")
