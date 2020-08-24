@@ -58,11 +58,7 @@ class RobotEyes(object):
         name += '.png'
         path = os.path.join(self.path, name)
         self.browser.capture_full_screen(path, blur, radius, redact)
-        if self.browser.is_mobile():
-            self._fix_base_image_size(path, name)
-        else:
-            self._resize(path)
-
+        self._fix_base_image_size(path, name)
         self.stats[name] = tolerance
         self.count += 1
 
@@ -86,6 +82,7 @@ class RobotEyes(object):
         path = os.path.join(self.path, name)
         time.sleep(1)
         self.browser.capture_element(path, selector, blur, radius, redact)
+        self._fix_base_image_size(path, name)
         self.stats[name] = tolerance
         self.count += 1
 

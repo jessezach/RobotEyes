@@ -91,10 +91,6 @@ class SeleniumHooks(object):
         )
         self.blur_regions(blur, radius, path) if blur else ''
         self._redact_regions(redact, path) if redact else ''
-        im = Image.open(path)
-        im = im.crop((left, top, right, bottom))
-        im.resize((1024, 700), Image.ANTIALIAS)
-        im.save(path)
 
     def capture_mobile_element(self, selector, path, blur=[], radius=50, redact=[]):
         prefix, locator, search_element = self.find_element(selector)
