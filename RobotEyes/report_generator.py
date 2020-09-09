@@ -170,7 +170,7 @@ def relative_path(baseline_folder, results_folder):
     if baseline_folder.startswith(os.path.sep):
         baseline_folder = baseline_folder[1:]
     # This condition to avoid fixing absolute paths
-    if os.path.exists(os.getcwd() + os.path.sep + baseline_folder):
+    if os.path.exists(os.getcwd() + os.path.sep + baseline_folder) and not os.path.isabs(baseline_folder):
         assert os.path.exists(results_folder)
         count = get_count_of_directories(results_folder)
         s = ''
