@@ -24,6 +24,13 @@ class SeleniumHooks(object):
         except RuntimeError:
             raise Exception('%s instance not found' % lib)
 
+        self.locator_strategies = {
+            'xpath': self.driver.find_element_by_xpath,
+            'id': self.driver.find_element_by_id,
+            'class': self.driver.find_element_by_class_name,
+            'css': self.driver.find_element_by_css_selector
+        }
+
     def is_mobile(self):
         return self.mobile
 
@@ -91,6 +98,9 @@ class SeleniumHooks(object):
         )
         self.blur_regions(blur, radius, path) if blur else ''
         self._redact_regions(redact, path) if redact else ''
+        im = Image.open(path)
+        im = im.crop((left, top, right, bottom))
+        im.save(path)
 
     def capture_mobile_element(self, selector, path, blur=[], radius=50, redact=[]):
         prefix, locator, search_element = self.find_element(selector)
@@ -202,23 +212,26 @@ class SeleniumHooks(object):
             prefix = 'xpath'
             locator = selector
         else:
-            selector_parts = selector.partition('=')
-            prefix = selector_parts[0].strip()
-            locator = selector_parts[2].strip()
-            if not locator:
-                raise Exception('Please prefix locator type.')
-        dict = {
-            'xpath': self.driver.find_element_by_xpath,
-            'id': self.driver.find_element_by_id,
-            'class': self.driver.find_element_by_class_name,
-            'css': self.driver.find_element_by_css_selector
-        }
-        if prefix.lower() not in dict:
-            raise Exception('Please add a valid locator prefix. Eg xpath, css, class.')
+            prefix, locator = self.get_selector_parts(selector)
 
-        func = dict[prefix.lower()]
-        search_element = func(locator)
+        strategy = self.locator_strategies[prefix]
+        search_element = strategy(locator)
         return prefix, locator, search_element
+
+    def get_selector_parts(self, selector):
+        separators = [':', '=']
+        prefix = locator = ''
+        for separator in separators:
+            selector_parts = selector.partition(separator)
+            prefix = selector_parts[0].strip().lower()
+            locator = selector_parts[2].strip()
+            if prefix in self.locator_strategies:
+                break
+
+        else:
+            if prefix not in self.locator_strategies:
+                raise Exception('Unknown locator strategy %s' % prefix)
+        return prefix, locator
 
     def _get_coordinates(self, prefix, locator, element):
         if self.mobile:

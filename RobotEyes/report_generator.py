@@ -8,8 +8,8 @@ def generate_report(baseline_folder, results_folder, actual_folder=None):
     sleep(1)
     img_path = os.path.join(results_folder, 'visual_images')
     report_path = os.path.join(results_folder, 'output.xml')
-    relative_baseline_folder_path = relative_path(baseline_folder, results_folder)
-    relative_actual_folder_path = relative_path(actual_folder, results_folder) if actual_folder else ''
+    relative_baseline_folder_path = relative_path(baseline_folder, results_folder.replace(os.getcwd(), ''))
+    relative_actual_folder_path = relative_path(actual_folder, results_folder.replace(os.getcwd(), '')) if actual_folder else ''
 
     html = '''
     <html>
@@ -171,6 +171,7 @@ def relative_path(baseline_folder, results_folder):
         baseline_folder = baseline_folder[1:]
     # This condition to avoid fixing absolute paths
     if os.path.exists(os.getcwd() + os.path.sep + baseline_folder) and not os.path.isabs(baseline_folder):
+        results_folder = results_folder[1:] if results_folder.startswith(os.path.sep) else results_folder
         assert os.path.exists(results_folder)
         count = get_count_of_directories(results_folder)
         s = ''
