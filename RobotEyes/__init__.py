@@ -21,6 +21,7 @@ class RobotEyes(object):
     browser = None
     ROBOT_LISTENER_API_VERSION = ROBOT_LISTENER_API_VERSION
     ROBOT_LIBRARY_SCOPE = ROBOT_LIBRARY_SCOPE
+    fail = False
 
 
     # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
