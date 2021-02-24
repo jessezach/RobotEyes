@@ -35,7 +35,7 @@ It also serves as documentation to clarify how this library functions on a high 
 ## Keyword Documentation
 | Keyword                | Arguments                        | Comments                                                                                    |
 |------------------------|----------------------------------|---------------------------------------------------------------------------------------------|
-| Open Eyes              | lib, tolerance                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5  cleanup=all_passed`                                                |
+| Open Eyes              | lib, tolerance, cleanup                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5  cleanup=all_passed`                                                |
 | Capture Full Screen    | tolerance, blur, radius, name, redact          | Ex `capture full screen  tolerance=5  name=homepage  blur=<array of locators>` radius=50(thickness of blur) |
 | Capture Element        | locator, tolerance, blur, radius, name, redact |                                                                                             |
 | Capture Mobile Element | locator, tolerance, blur, radius, name, redact |                                                                                             |
