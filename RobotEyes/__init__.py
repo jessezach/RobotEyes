@@ -17,23 +17,19 @@ class RobotEyes(object):
     output_dir = ''
     images_base_folder = ''
     test_name = ''
-    test_name_folder = ''
     baseline_dir = ''
     browser = None
     ROBOT_LISTENER_API_VERSION = ROBOT_LISTENER_API_VERSION
     ROBOT_LIBRARY_SCOPE = ROBOT_LIBRARY_SCOPE
     fail = False
-    cleanup_files = None
-    pass_color = 'green'
-    fail_color = 'red'
+
 
     # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
     def __init__(self, tolerance=0):
         self.ROBOT_LIBRARY_LISTENER = self
         self.lib = 'none'
 
-    def open_eyes(self, lib='SeleniumLibrary', tolerance=0, template_id='', cleanup=None):
-        self._set_cleanup(cleanup)
+    def open_eyes(self, lib='SeleniumLibrary', tolerance=0, template_id=''):
         self.tolerance = float(tolerance)
         self.tolerance = self.tolerance / 100 if self.tolerance >= 1 else self.tolerance
         self.stats = {}
@@ -48,12 +44,12 @@ class RobotEyes(object):
         self.test_name = BuiltIn().replace_variables('${TEST NAME}')
         if template_id:
             self.test_name += '_%s' % template_id
-        self.test_name_folder = self.test_name.replace(' ', '_')
-        print(self.test_name_folder)
+        test_name_folder = self.test_name.replace(' ', '_')
+        print(test_name_folder)
         # delete if directory already exist. Fresh test
-        self._delete_folder_if_exists()
+        self._delete_folder_if_exists(test_name_folder)
         # recreate deleted folder
-        self._create_empty_folder()
+        self._create_empty_folder(test_name_folder)
         self.count = 1
 
     # Captures full screen
@@ -67,6 +63,7 @@ class RobotEyes(object):
         self._fix_base_image_size(path, name)
         self.stats[name] = tolerance
         self.count += 1
+
 
     # Captures a specific region in a mobile screen
     def capture_mobile_element(self, selector, tolerance=None, blur=[], radius=50, name=None, redact=[]):
@@ -113,15 +110,12 @@ class RobotEyes(object):
             color, result = self._get_result(difference, tolerance)
             self.stats[output] = tolerance
             text = '%s %s' % (result, color)
-            txt_path = os.path.join(self.path, output + '.txt')
-            outfile = open(txt_path, 'w')
+            outfile = open(self.path + os.sep + output + '.txt', 'w')
             outfile.write(text)
             outfile.write("\n")
             img_names = '%s %s' % (ref, actual)
             outfile.write(img_names)
             outfile.close()
-            if color == self.pass_color and self.cleanup_files is not None:
-                self._cleanup_passed(self.actual_dir, diff_path)
         else:
             raise Exception('Image %s or %s doesnt exist' % (ref, actual))
 
@@ -140,7 +134,6 @@ class RobotEyes(object):
                 b_path = os.path.join(baseline_path, filename)
                 a_path = os.path.join(actual_path, filename)
                 d_path = os.path.join(diff_path, filename)
-                txt_path = os.path.join(actual_path, filename + '.txt')
 
                 if os.path.exists(b_path):
                     difference = Imagemagick(b_path, a_path, d_path).compare_images()
@@ -154,25 +147,16 @@ class RobotEyes(object):
                     text = '%s %s' % (result, color)
                 else:
                     shutil.copy(a_path, b_path)
-                    color = self.pass_color
-                    text = '%s %s' % ('None', color)
+                    text = '%s %s' % ('None', 'green')
 
-                output = open(txt_path, 'w')
+                output = open(actual_path + os.path.sep + filename + '.txt', 'w')
                 output.write(text)
                 output.close()
-                if color == self.pass_color and self.cleanup_files is not None:
-                    self._cleanup_passed(actual_path, diff_path)
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
-    def _set_cleanup(self, cleanup):
-        cleanup_options = [None, 'all_passed', 'diffs_passed', 'actuals_passed']
-        self.cleanup_files = None
-        if cleanup in cleanup_options:
-            self.cleanup_files = cleanup
-
-    def _delete_folder_if_exists(self):
-        actual_image_test_folder = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, self.test_name_folder)
-        diff_image_test_folder = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, self.test_name_folder)
+    def _delete_folder_if_exists(self, test_name_folder):
+        actual_image_test_folder = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
+        diff_image_test_folder = os.path.join(self.images_base_folder, DIFF_IMAGE_BASE_FOLDER, test_name_folder)
 
         if os.path.exists(actual_image_test_folder):
             shutil.rmtree(actual_image_test_folder)
@@ -180,14 +164,14 @@ class RobotEyes(object):
         if os.path.exists(diff_image_test_folder):
             shutil.rmtree(diff_image_test_folder)
 
-    def _create_empty_folder(self):
+    def _create_empty_folder(self, test_name_folder):
         if self.lib.lower() != 'none':
-            self.path = os.path.join(self.baseline_dir, self.test_name_folder)
+            self.path = os.path.join(self.baseline_dir, test_name_folder)
 
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
 
-        self.path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, self.test_name_folder)
+        self.path = os.path.join(self.images_base_folder, ACTUAL_IMAGE_BASE_FOLDER, test_name_folder)
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -229,14 +213,14 @@ class RobotEyes(object):
     def _get_result(self, difference, threshold):
         difference, threshold = int(difference*100), int(threshold*100)
         if difference > threshold:
-            color = self.fail_color
+            color = 'red'
             result = '%s<%s' % (threshold, difference)
             self.fail = True
         elif difference == threshold:
-            color = self.pass_color
+            color = 'green'
             result = '%s==%s' % (threshold, difference)
         else:
-            color = self.pass_color
+            color = 'green'
             result = '%s>%s' % (threshold, difference)
         return color, result
 
@@ -253,20 +237,6 @@ class RobotEyes(object):
 
     def _get_name(self):
         return 'img%s' % str(self.count)
-
-    def _cleanup_passed(self, actuals_path, diff_path):
-        if self.cleanup_files == 'diffs_passed':
-            self._cleanup_passed_files([diff_path])
-        elif self.cleanup_files == 'actuals_passed':
-            self._cleanup_passed_files([actuals_path])
-        else:
-            self._delete_folder_if_exists()
-
-    @staticmethod
-    def _cleanup_passed_files(test_paths):
-        for test_path in test_paths:
-            if os.path.exists(test_path):
-                shutil.rmtree(test_path)
 
     def _end_test(self, data, test):
         if hasattr(self, 'lib') and self.lib.lower() == 'none':
