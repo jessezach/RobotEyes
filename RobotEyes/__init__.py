@@ -24,13 +24,15 @@ class RobotEyes(object):
     ROBOT_LIBRARY_SCOPE = ROBOT_LIBRARY_SCOPE
     fail = False
     cleanup_files = None
+    pass_color = 'green'
+    fail_color = 'red'
 
     # Keeping this arg to avoid exceptions for those who have added tolerance in the previous versions.
     def __init__(self, tolerance=0):
         self.ROBOT_LIBRARY_LISTENER = self
         self.lib = 'none'
 
-    def open_eyes(self, lib='SeleniumLibrary', tolerance=0, cleanup=None, template_id=''):
+    def open_eyes(self, lib='SeleniumLibrary', tolerance=0, template_id='', cleanup=None):
         self._set_cleanup(cleanup)
         self.tolerance = float(tolerance)
         self.tolerance = self.tolerance / 100 if self.tolerance >= 1 else self.tolerance
@@ -118,7 +120,7 @@ class RobotEyes(object):
             img_names = '%s %s' % (ref, actual)
             outfile.write(img_names)
             outfile.close()
-            if color == 'green' and self.cleanup_files is not None:
+            if color == self.pass_color and self.cleanup_files is not None:
                 self._cleanup_passed(self.actual_dir, diff_path)
         else:
             raise Exception('Image %s or %s doesnt exist' % (ref, actual))
@@ -152,12 +154,13 @@ class RobotEyes(object):
                     text = '%s %s' % (result, color)
                 else:
                     shutil.copy(a_path, b_path)
-                    text = '%s %s' % ('None', 'green')
+                    color = self.pass_color
+                    text = '%s %s' % ('None', color)
 
                 output = open(txt_path, 'w')
                 output.write(text)
                 output.close()
-                if color == 'green' and self.cleanup_files is not None:
+                if color == self.pass_color and self.cleanup_files is not None:
                     self._cleanup_passed(actual_path, diff_path)
         BuiltIn().run_keyword('Fail', 'Image dissimilarity exceeds tolerance') if self.fail else ''
 
@@ -226,14 +229,14 @@ class RobotEyes(object):
     def _get_result(self, difference, threshold):
         difference, threshold = int(difference*100), int(threshold*100)
         if difference > threshold:
-            color = 'red'
+            color = self.fail_color
             result = '%s<%s' % (threshold, difference)
             self.fail = True
         elif difference == threshold:
-            color = 'green'
+            color = self.pass_color
             result = '%s==%s' % (threshold, difference)
         else:
-            color = 'green'
+            color = self.pass_color
             result = '%s>%s' % (threshold, difference)
         return color, result
 
