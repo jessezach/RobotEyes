@@ -35,13 +35,24 @@ It also serves as documentation to clarify how this library functions on a high 
 ## Keyword Documentation
 | Keyword                | Arguments                        | Comments                                                                                    |
 |------------------------|----------------------------------|---------------------------------------------------------------------------------------------|
-| Open Eyes              | lib, tolerance                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5`                                                |
+| Open Eyes              | lib, tolerance, template_id, cleanup                   | Ex `open eyes  lib=AppiumLibrary  tolerance=5  cleanup=all_passed`                                                |
 | Capture Full Screen    | tolerance, blur, radius, name, redact          | Ex `capture full screen  tolerance=5  name=homepage  blur=<array of locators>` radius=50(thickness of blur) |
 | Capture Element        | locator, tolerance, blur, radius, name, redact |                                                                                             |
 | Capture Mobile Element | locator, tolerance, blur, radius, name, redact |                                                                                             |
 | Scroll To Element      | locator                          | Ex `scroll to element  id=user`                                                             |
 | Compare Images         |                                  | Compares all the images captured in the test with their respective base image               |
 | Compare Two Images     | first, second, output, tolerance | Compares two images captured in the above steps. Takes image names, diff file name and tolerance as arguments Ex: Compare Two Images  img1  img2  diff  10|
+
+## Cleanup Options
+This is only set when invoking open eyes
+- all_passed
+  - This will cleanup diff and actual folders that passed
+- diffs_passed
+  - Will only cleanup diffs that passed, leaving actuals in place
+- actuals_passed
+  - Will only cleanup actuals that passed, leaving diffs in place
+- None
+  - Won't do any image folder cleanups (default)
 
 ### Running Tests ###
 `robot -d results -v images_dir:<baseline_images_directory> tests`<br/>
