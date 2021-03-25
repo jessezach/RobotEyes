@@ -39,7 +39,11 @@ def generate_report(baseline_folder, results_folder, actual_folder=None):
     <tbody>
     '''
 
-    tree = ET.parse(report_path)
+    try:
+        tree = ET.parse(report_path)
+    except FileNotFoundError:
+        return
+
     for t in tree.findall('.//test'):
         if not t.findall('.//kw[@name="Open Eyes"]'):
             continue
