@@ -176,8 +176,7 @@ def relative_path(baseline_folder, results_folder):
     # This condition to avoid fixing absolute paths
     if os.path.exists(os.getcwd() + os.path.sep + baseline_folder) and not os.path.isabs(baseline_folder):
         results_folder = results_folder[1:] if results_folder.startswith(os.path.sep) else results_folder
-        assert os.path.exists(results_folder)
-        count = get_count_of_directories(results_folder)
+        count = get_count_of_sub_directories(results_folder)
         s = ''
         for i in range(count):
             s = s + ('..' + os.path.sep)
@@ -188,12 +187,12 @@ def relative_path(baseline_folder, results_folder):
         return os.path.sep + baseline_folder
 
 
-def get_count_of_directories(results_path):
+def get_count_of_sub_directories(results_path):
     count = 0
     if not results_path.startswith(os.path.sep):
         results_path = os.path.sep + results_path
 
-    for i in range(len(results_path)):
+    for i in range(1, len(results_path)):
         if results_path[i] != os.path.sep and results_path[i-1] == os.path.sep:
             count += 1
     return count
