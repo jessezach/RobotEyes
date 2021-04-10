@@ -49,7 +49,7 @@ class RobotEyes(object):
         if template_id:
             self.test_name += '_%s' % template_id
         self.test_name_folder = self.test_name.replace(' ', '_')
-        print(self.test_name_folder)
+        print("roboteyestestfolder: %s" % self.test_name_folder)
         # delete if directory already exist. Fresh test
         self._delete_folder_if_exists()
         # recreate deleted folder
