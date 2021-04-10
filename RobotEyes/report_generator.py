@@ -55,7 +55,8 @@ def generate_report(baseline_folder, results_folder, actual_folder=None):
         if not os.path.exists(os.path.join(img_path, 'actual', folder_name)):
             for open_eyes_keyword in t.findall('.//kw[@name="Open Eyes"]'):
                 # Get the actual test folder name from the message we log within open eyes keyword
-                folder_name = open_eyes_keyword.findall('.//msg')[0].text
+                folder_name = get_template_test_name(open_eyes_keyword)
+
                 if folder_name:
                     if actual_folder:
                         html = make_non_web_test_table(html, baseline_folder, relative_baseline_folder_path, img_path,
@@ -169,6 +170,11 @@ def generate_report(baseline_folder, results_folder, actual_folder=None):
     output.write(html)
     output.close()
 
+def get_template_test_name(open_eyes_keyword):
+    for element in open_eyes_keyword.findall('.//msg'):
+        if element.text.startswith("roboteyestestfolder"):
+            return element.text.split(":")[1].strip()
+    return ""
 
 def relative_path(baseline_folder, results_folder):
     if baseline_folder.startswith(os.path.sep):
