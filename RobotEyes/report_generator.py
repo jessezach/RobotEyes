@@ -80,6 +80,10 @@ def generate_report(baseline_folder, results_folder, actual_folder=None):
       tr.accordion-toggle:hover {
         cursor:pointer;
       }
+      img {
+        image-rendering: pixelated;
+        object-fit: contain;
+      }
     </style>
     <script>
         $(document).ready(function() {
