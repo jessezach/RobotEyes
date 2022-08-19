@@ -5,6 +5,7 @@ from PIL import Image, ImageFilter, ImageOps
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.common.exceptions import JavascriptException
 from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException
+from selenium.webdriver.common.by import By
 
 
 class SeleniumHooks(object):
@@ -25,11 +26,35 @@ class SeleniumHooks(object):
             raise Exception('%s instance not found' % lib)
 
         self.locator_strategies = {
-            'xpath': self.driver.find_element_by_xpath,
-            'id': self.driver.find_element_by_id,
-            'class': self.driver.find_element_by_class_name,
-            'css': self.driver.find_element_by_css_selector
+            'xpath': self._find_element_by_xpath,
+            'id': self._find_element_by_id,
+            'class': self._find_element_by_class_name,
+            'css': self._find_element_by_css_selector
         }
+
+    def _find_element_by_xpath(self, xpath):
+        if self.mobile:
+            return self.driver.find_element_by_xpath(xpath)
+        else:
+            return self.driver.find_element(By.XPATH, xpath)
+
+    def _find_element_by_id(self, id):
+        if self.mobile:
+            return self.driver.find_element_by_id(id)
+        else:
+            return self.driver.find_element(By.ID, id)
+
+    def _find_element_by_class_name(self, class_name):
+        if self.mobile:
+            return self.driver.find_element_by_class_name(class_name)
+        else:
+            return self.driver.find_element(By.CLASS_NAME, class_name)
+
+    def _find_element_by_css_selector(self, css_selector):
+        if self.mobile:
+            return self.driver.find_element_by_css_selector(css_selector)
+        else:
+            return self.driver.find_element(By.CSS_SELECTOR, css_selector)
 
     def is_mobile(self):
         return self.mobile
