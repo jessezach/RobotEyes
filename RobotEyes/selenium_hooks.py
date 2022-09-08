@@ -60,7 +60,7 @@ class SeleniumHooks(object):
         if self.mobile:
             return self.driver.find_elements_by_tag_name(tag_name)
         else:
-            return self.driver.find_element(By.TAG_NAME, tag_name)
+            return self.driver.find_elements(By.TAG_NAME, tag_name)
 
     def is_mobile(self):
         return self.mobile
