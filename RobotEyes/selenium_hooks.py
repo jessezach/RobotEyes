@@ -56,6 +56,12 @@ class SeleniumHooks(object):
         else:
             return self.driver.find_element(By.CSS_SELECTOR, css_selector)
 
+    def _find_elements_by_tag_name(self, tag_name):
+        if self.mobile:
+            return self.driver.find_elements_by_tag_name(tag_name)
+        else:
+            return self.driver.find_element(By.TAG_NAME, tag_name)
+
     def is_mobile(self):
         return self.mobile
 
@@ -84,8 +90,8 @@ class SeleniumHooks(object):
                 self.driver.switch_to.frame(initial_frame)
 
     def blur_in_all_frames(self, blur, radius, path):
-        frames = self.driver.find_elements_by_tag_name("frame")
-        iframes = self.driver.find_elements_by_tag_name("iframe")
+        frames = self._find_elements_by_tag_name("frame")
+        iframes = self._find_elements_by_tag_name("iframe")
         joined_list = frames + iframes
         print("Frames: %s" % str(len(joined_list)))
         for index, frame in enumerate(joined_list):
@@ -98,8 +104,8 @@ class SeleniumHooks(object):
             self.driver.switch_to.default_content()
 
     def redact_in_all_frames(self, redact, path):
-        frames = self.driver.find_elements_by_tag_name("frame")
-        iframes = self.driver.find_elements_by_tag_name("iframe")
+        frames = self._find_elements_by_tag_name("frame")
+        iframes = self._find_elements_by_tag_name("iframe")
         joined_list = frames + iframes
         print("Frames: %s" % str(len(joined_list)))
         for index, frame in enumerate(joined_list):
