@@ -1,7 +1,7 @@
 import os
 from optparse import OptionParser
 
-from .report_generator import generate_report
+from .report_utils import generate_report
 
 
 def parse_options():

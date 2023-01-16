@@ -1,7 +1,8 @@
-IMAGES_FOLDER = 'visual_images'
 ACTUAL_IMAGE_BASE_FOLDER = 'actual'
-DIFF_IMAGE_BASE_FOLDER = 'diff'
 BASELINE_IMAGE_BASE_FOLDER = 'baseline'
+CLEANUP_OPTIONS = [None, 'all_passed', 'diffs_passed', 'actuals_passed']
+DIFF_IMAGE_BASE_FOLDER = 'diff'
+IMAGES_FOLDER = 'visual_images'
 MODE_TEST = 'test'
 MODE_BASELINE = 'baseline'
 REPORT_FILE = 'visualReport.html'
