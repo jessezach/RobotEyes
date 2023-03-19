@@ -22,7 +22,7 @@ class Imagemagick(object):
             diff = err.split()[1][1:-1]
 
             try:
-                trimmed = float("{:.2f}".format(float(diff)))
+                trimmed = float(diff)
                 return trimmed
             except ValueError:
                 if attempts == 0:
