@@ -195,7 +195,7 @@ class RobotEyes(object):
     def _resize(self, *args):
         for arg in args:
             img = Image.open(arg)
-            img = img.resize((1024, 700), Image.ANTIALIAS)
+            img = img.resize((1024, 700), Image.LANCZOS)
             img.save(arg)
 
     def _fix_base_image_size(self, path, image_name):
@@ -209,7 +209,7 @@ class RobotEyes(object):
             im = Image.open(base_image)
             b_width, b_height = im.size
             if width != b_width or height != b_height:
-                im = im.resize((width, height), Image.ANTIALIAS)
+                im = im.resize((width, height), Image.LANCZOS)
                 im.save(base_image)
 
     def _delete_report_if_old(self, path):
